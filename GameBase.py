@@ -98,32 +98,10 @@ class GameBase(ShowBase):
         self.character.setAngularMovement(turningAngle)
 
     def positionCamera(self, task):
-        base.camera.setZ(self.floater.getZ())
+        base.camera.setX(self.characterNP, 0)
+        base.camera.setZ(self.characterNP, +2)
+        base.camera.setY(self.characterNP, -10)
         base.camera.lookAt(self.characterNP)
-        if inputState.isSet('cam-left'):
-            base.camera.setX(base.camera, +20 * globalClock.getDt())
-        if inputState.isSet('cam-right'):
-            base.camera.setX(base.camera, -20 * globalClock.getDt())
-
-        camvec = self.characterNP.getPos() - base.camera.getPos()
-        camvec.setZ(0)
-        camdist = camvec.length()
-        camvec.normalize()
-        if (camdist > 10.0):
-            base.camera.setPos(base.camera.getPos() + camvec * (camdist - 10))
-            camdist = 10.0
-        if (camdist < 5.0):
-            base.camera.setPos(base.camera.getPos() - camvec * (5 - camdist))
-            camdist = 5.0
-
-        # The camera should look in ralph's direction,
-        # but it should also try to stay horizontal, so look at
-        # a floater which hovers above ralph's head.
-
-        self.floater.setPos(self.characterNP.getPos())
-        self.floater.setZ(self.characterNP.getZ() + 2.0)
-        base.camera.lookAt(self.floater)
-
         return task.cont
 
     # Setup functions for Game
@@ -202,8 +180,6 @@ class GameBase(ShowBase):
         inputState.watchWithModifiers('turnLeft', 'a')
         inputState.watchWithModifiers('turnRight', 'd')
         inputState.watchWithModifiers('jump', 'space')
-        inputState.watchWithModifiers('cam-left', 'q')
-        inputState.watchWithModifiers('cam-right', 'e')
 
         # action tests
         inputState.watchWithModifiers('fallbackGetup', '1')

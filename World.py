@@ -14,7 +14,7 @@ class Game(GameBase):
         # self.HauntedHouse.setPos(0, 0, 0)
 
         self.CityTerrain = self.loader.loadModel(
-            "models/CityTerrain/CityTerrain.egg")
+            "models/FaerieTerrain/FaerieTerrain.egg")
         self.CityTerrain.reparentTo(self.render)
         self.CityTerrain.setScale(0.1, 0.1, 0.1)
         self.CityTerrain.setPos(0, 0, 0)
