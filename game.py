@@ -1,17 +1,18 @@
 # LIHAO LIN Created on 07/08/2016 All right reserved
-import sys
-from direct.showbase.ShowBase import ShowBase
 from direct.actor.Actor import Actor
 from direct.showbase.InputStateGlobal import inputState
+from direct.showbase.ShowBase import ShowBase
+from panda3d.bullet import BulletBoxShape
+from panda3d.bullet import BulletCharacterControllerNode
+from panda3d.bullet import BulletDebugNode
+from panda3d.bullet import BulletPlaneShape
+from panda3d.bullet import BulletRigidBodyNode
+from panda3d.bullet import BulletWorld
 from panda3d.core import AmbientLight, DirectionalLight
-from panda3d.core import Vec3, Vec4
 from panda3d.core import BitMask32
 from panda3d.core import NodePath, PandaNode
-from panda3d.bullet import BulletWorld
-from panda3d.bullet import BulletPlaneShape
-from panda3d.bullet import BulletBoxShape
-from panda3d.bullet import BulletRigidBodyNode
-from panda3d.bullet import BulletDebugNode
+from panda3d.core import Vec3, Vec4
+import sys
 
 
 class GameBase(ShowBase):
