@@ -30,7 +30,45 @@ class GameBase(ShowBase):
         return task.cont
 
     def processInputs(self):
-        pass
+        movingDirection = Vec3(0, 0, 0)
+        turningAngle = 0.0
+        isMovingDirection = False
+        if inputState.isSet('forward'):
+            movingDirection.setY(2.0)
+            isMovingDirection = True
+        if inputState.isSet('reverse'):
+            movingDirection.setY(-2.0)
+            isMovingDirection = True
+        if inputState.isSet('left'):
+            movingDirection.setX(-2.0)
+            isMovingDirection = True
+        if inputState.isSet('right'):
+            movingDirection.setX(2.0)
+            isMovingDirection = True
+        if inputState.isSet('jump'):
+            self.runningPose = False
+            self.actorNP.play("jump")
+            self.Jump()
+        if inputState.isSet('turnLeft'):
+            turningAngle = 120.0
+            isMovingDirection = True
+        if inputState.isSet('turnRight'):
+            turningAngle = -120.0
+            isMovingDirection = True
+
+        if isMovingDirection:
+            if self.runningPose is False:
+                self.actorNP.loop("run")
+                self.runningPose = True
+                print "movingDirection"
+        else:
+            if self.runningPose:
+                self.actorNP.stop()
+                self.actorNP.pose("walk", 0)
+                self.runningPose = False
+
+        self.character.setLinearMovement(movingDirection, True)
+        self.character.setAngularMovement(turningAngle)
 
     def positionCamera(self):
         camvec = self.characterNP.getPos() - base.camera.getPos()
@@ -86,16 +124,25 @@ class GameBase(ShowBase):
         self.characterNP.setH(45)
         self.characterNP.setCollideMask(BitMask32.allOn())
         self.world.attachCharacter(self.character)
-        self.actorNP = Actor('models/Actors/lego/Brawler/Brawler.egg', {
-            'run': 'models/Actors/lego/Brawler/Brawler-walk.egg',
-            'walk': 'models/Actors/lego/Brawler/Brawler-walk.egg',
-            'jump': 'models/Actors/lego/Brawler/Brawler-jump.egg'})
+        self.actorNP = Actor('models/Actors/lego/Brawler/Brawler.egg',
+                             {
+                                 'fallbackGetup': 'models/Actors/lego/Bricker/Bricker-FallbackGetup.egg',
+                                 'fallforwardGetup': 'models/Actors/lego/Bricker/Bricker-FallforwardGetup.egg',
+                                 'fireball': 'models/Actors/lego/Bricker/Bricker-fireball.egg',
+                                 'jump': 'models/Actors/lego/Bricker/Bricker-jump.egg',
+                                 'punching': 'models/Actors/lego/Bricker/Bricker-punching.egg',
+                                 'run': 'models/Actors/lego/Bricker/Bricker-run.egg',
+                                 'superpunch': 'models/Actors/lego/Bricker/Bricker-superpunch.egg',
+                                 'walk': 'models/Actors/lego/Bricker/Bricker-walk.egg',
+                                 'egg': 'models/Actors/lego/Bricker/Bricker.egg'
+                             })
         self.actorNP.reparentTo(self.characterNP)
         self.actorNP.setScale(0.3048)
         self.actorNP.setH(180)
         self.actorNP.setPos(0, 0, 0.4)
         self.floater = NodePath(PandaNode("floater"))
         self.floater.reparentTo(render)
+        self.runningPose = False
 
     def setupLights(self):
         alight = AmbientLight('ambientLight')
