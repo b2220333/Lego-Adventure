@@ -30,6 +30,33 @@ class GameBase(ShowBase):
         return task.cont
 
     def processInputs(self):
+        # input tests
+        if inputState.isSet('fallbackGetup'):
+            print "fallbackGetup is playing"
+            self.actorNP.play('fallbackGetup')
+        if inputState.isSet('fallforwardGetup'):
+            print "fallforwardGetup is playing"
+            self.actorNP.play('fallforwardGetup')
+        if inputState.isSet('fireball'):
+            print "fireball is playing"
+            self.actorNP.play('fireball')
+        if inputState.isSet('jump'):
+            print "jump is playing"
+            self.actorNP.play('jump')
+        if inputState.isSet('punching'):
+            print "punching is playing"
+            self.actorNP.play('punching')
+        if inputState.isSet('run'):
+            print "run is playing"
+            self.actorNP.play('run')
+        if inputState.isSet('superpunch'):
+            print "superpunch is playing"
+            self.actorNP.play('superpunch')
+        if inputState.isSet('walk'):
+            print "walk is playing"
+            self.actorNP.play('walk')
+        # input test end
+
         movingDirection = Vec3(0, 0, 0)
         turningAngle = 0.0
         isMovingDirection = False
@@ -48,7 +75,7 @@ class GameBase(ShowBase):
         if inputState.isSet('jump'):
             self.runningPose = False
             self.actorNP.play("jump")
-            self.Jump()
+            # self.Jump()
         if inputState.isSet('turnLeft'):
             turningAngle = 120.0
             isMovingDirection = True
@@ -124,7 +151,7 @@ class GameBase(ShowBase):
         self.characterNP.setH(45)
         self.characterNP.setCollideMask(BitMask32.allOn())
         self.world.attachCharacter(self.character)
-        self.actorNP = Actor('models/Actors/lego/Brawler/Brawler.egg',
+        self.actorNP = Actor('models/Actors/lego/Bricker/Bricker3.egg',
                              {
                                  'fallbackGetup': 'models/Actors/lego/Bricker/Bricker-FallbackGetup.egg',
                                  'fallforwardGetup': 'models/Actors/lego/Bricker/Bricker-FallforwardGetup.egg',
@@ -133,8 +160,7 @@ class GameBase(ShowBase):
                                  'punching': 'models/Actors/lego/Bricker/Bricker-punching.egg',
                                  'run': 'models/Actors/lego/Bricker/Bricker-run.egg',
                                  'superpunch': 'models/Actors/lego/Bricker/Bricker-superpunch.egg',
-                                 'walk': 'models/Actors/lego/Bricker/Bricker-walk.egg',
-                                 'egg': 'models/Actors/lego/Bricker/Bricker.egg'
+                                 'walk': 'models/Actors/lego/Bricker/Bricker-walk.egg'
                              })
         self.actorNP.reparentTo(self.characterNP)
         self.actorNP.setScale(0.3048)
@@ -166,6 +192,17 @@ class GameBase(ShowBase):
         inputState.watchWithModifiers('turnLeft', 'a')
         inputState.watchWithModifiers('turnRight', 'd')
         inputState.watchWithModifiers('jump', 'space')
+
+        # action tests
+        inputState.watchWithModifiers('fallbackGetup', '1')
+        inputState.watchWithModifiers('fallforwardGetup', '2')
+        inputState.watchWithModifiers('fireball', '3')
+        inputState.watchWithModifiers('jump', '4')
+        inputState.watchWithModifiers('punching', '5')
+        inputState.watchWithModifiers('run', '6')
+        inputState.watchWithModifiers('superpunch', '7')
+        inputState.watchWithModifiers('walk', '8')
+
         print "Done Setup Control"
 
     def Exit(self):
