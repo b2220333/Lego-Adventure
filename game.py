@@ -2,30 +2,19 @@
 import sys
 from direct.showbase.ShowBase import ShowBase
 from direct.actor.Actor import Actor
-# from direct.showbase.DirectObject import DirectObject
 from direct.showbase.InputStateGlobal import inputState
 from panda3d.core import AmbientLight, DirectionalLight
 from panda3d.core import Vec3, Vec4
 from panda3d.core import BitMask32
 from panda3d.core import NodePath, PandaNode
 from panda3d.bullet import BulletWorld
-# from panda3d.bullet import BulletHelper
 from panda3d.bullet import BulletPlaneShape
 from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletDebugNode
-from panda3d.bullet import BulletSphereShape
-from panda3d.bullet import BulletCapsuleShape
-from panda3d.bullet import BulletCharacterControllerNode
-from panda3d.bullet import BulletHeightfieldShape
-from panda3d.bullet import BulletTriangleMesh
-from panda3d.bullet import BulletTriangleMeshShape
-from panda3d.bullet import BulletSoftBodyNode
-from panda3d.bullet import BulletSoftBodyConfig
-from panda3d.bullet import ZUp
 
 
-class GameReadyBase(ShowBase):
+class GameBase(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
         self.setupWorld()
@@ -142,5 +131,5 @@ class GameReadyBase(ShowBase):
         else:
             self.debugNP.hide()
 
-game = GameReadyBase()
+game = GameBase()
 game.run()
