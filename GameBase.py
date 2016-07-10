@@ -131,6 +131,3 @@ class GameBase(ShowBase):
             self.debugNP.show()
         else:
             self.debugNP.hide()
-
-game = GameBase()
-game.run()
