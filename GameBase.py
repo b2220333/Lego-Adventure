@@ -19,6 +19,7 @@ class GameBase(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
         self.setupWorld()
+        self.cameraHeight = 5
         taskMgr.add(self.update, 'update')
         taskMgr.add(self.positionCamera, 'positionCamera')
 
@@ -55,6 +56,13 @@ class GameBase(ShowBase):
         if inputState.isSet('walk'):
             print "walk is playing"
             self.actorNP.play('walk')
+
+        if inputState.isSet('cameraHigher'):
+            self.cameraHeight += 1
+            print "new camera height {}".format(self.cameraHeight)
+        if inputState.isSet('cameraLower'):
+            self.cameraHeight -= 1
+            print "new camera height {}".format(self.cameraHeight)
         # input test end
 
         movingDirection = Vec3(0, 0, 0)
@@ -93,14 +101,15 @@ class GameBase(ShowBase):
                 self.actorNP.stop()
                 self.actorNP.pose("walk", 0)
                 self.runningPose = False
-
+        movingDirection = movingDirection * 30
+        print "Player Position: {}".format(self.characterNP.getPos())
         self.character.setLinearMovement(movingDirection, True)
         self.character.setAngularMovement(turningAngle)
 
     def positionCamera(self, task):
         base.camera.setX(self.characterNP, 0)
-        base.camera.setZ(self.characterNP, +2)
-        base.camera.setY(self.characterNP, -10)
+        base.camera.setY(self.characterNP, -30)
+        base.camera.setZ(self.characterNP, self.cameraHeight)
         base.camera.lookAt(self.characterNP)
         return task.cont
 
@@ -180,6 +189,8 @@ class GameBase(ShowBase):
         inputState.watchWithModifiers('turnLeft', 'a')
         inputState.watchWithModifiers('turnRight', 'd')
         inputState.watchWithModifiers('jump', 'space')
+        inputState.watchWithModifiers('cameraHigher', 'q')
+        inputState.watchWithModifiers('cameraLower', 'e')
 
         # action tests
         inputState.watchWithModifiers('fallbackGetup', '1')
@@ -190,7 +201,6 @@ class GameBase(ShowBase):
         inputState.watchWithModifiers('run', '6')
         inputState.watchWithModifiers('superpunch', '7')
         inputState.watchWithModifiers('walk', '8')
-
         print "Done Setup Control"
 
     def Exit(self):
