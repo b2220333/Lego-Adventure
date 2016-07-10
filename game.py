@@ -2,14 +2,14 @@
 import sys
 from direct.showbase.ShowBase import ShowBase
 from direct.actor.Actor import Actor
-from direct.showbase.DirectObject import DirectObject
+# from direct.showbase.DirectObject import DirectObject
 from direct.showbase.InputStateGlobal import inputState
 from panda3d.core import AmbientLight, DirectionalLight
-from panda3d.core import Vec3, Vec4, Point3
+from panda3d.core import Vec3, Vec4
 from panda3d.core import BitMask32
 from panda3d.core import NodePath, PandaNode
 from panda3d.bullet import BulletWorld
-from panda3d.bullet import BulletHelper
+# from panda3d.bullet import BulletHelper
 from panda3d.bullet import BulletPlaneShape
 from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletRigidBodyNode
@@ -25,11 +25,10 @@ from panda3d.bullet import BulletSoftBodyConfig
 from panda3d.bullet import ZUp
 
 
-class LegoAdventure(ShowBase):
+class GameReadyBase(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
         self.setupWorld()
-
         taskMgr.add(self.update, 'update')
 
     def update(self, task):
@@ -37,7 +36,13 @@ class LegoAdventure(ShowBase):
         # do Physics process
         dt = globalClock.getDt()
         self.world.doPhysics(dt, 4, 1.0 / 240.0)
-        # reposition the camera
+        self.positionCamera()
+        return task.cont
+
+    def processInputs(self):
+        pass
+
+    def positionCamera(self):
         camvec = self.characterNP.getPos() - base.camera.getPos()
         camvec.setZ(0)
         camdist = camvec.length()
@@ -50,11 +55,7 @@ class LegoAdventure(ShowBase):
             camdist = 5.0
         self.floater.setPos(self.characterNP.getPos())
         self.floater.setZ(self.characterNP.getZ() + 2.0)
-        # base.camera.lookAt(self.floater)
-        return task.cont
-
-    def processInputs(self):
-        pass
+        base.camera.lookAt(self.floater)
 
     # Setup functions for Game
     def setupWorld(self):
@@ -76,25 +77,22 @@ class LegoAdventure(ShowBase):
         # other setups
         self.setupLights()
         self.setupControlKeys()
-        # Floor
+        self.addGround()
+        self.addPlayer()
+
+    def addGround(self):
         shape = BulletPlaneShape(Vec3(0, 0, 1), 0)
-        floorNP = self.render.attachNewNode(BulletRigidBodyNode('Floor'))
+        floorNP = self.render.attachNewNode(BulletRigidBodyNode('Ground'))
         floorNP.node().addShape(shape)
         floorNP.setPos(0, 0, 0)
         floorNP.setCollideMask(BitMask32.allOn())
         self.world.attachRigidBody(floorNP.node())
-        self.addPlayer()
 
     def addPlayer(self):
-        # Character
-        h = 1.75
-        w = 0.4
-        # TODO: Change the Shape of the character in physics world
-        shape = BulletCapsuleShape(w, h - 2 * w, ZUp)
+        shape = BulletBoxShape(Vec3(0.3, 0.2, 0.7))
         self.character = BulletCharacterControllerNode(shape, 0.4, 'Player')
-        #    self.character.setMass(1.0)
         self.characterNP = self.render.attachNewNode(self.character)
-        self.characterNP.setPos(-2, 0, 14)
+        self.characterNP.setPos(5, 5, 5)
         self.characterNP.setH(45)
         self.characterNP.setCollideMask(BitMask32.allOn())
         self.world.attachCharacter(self.character)
@@ -144,5 +142,5 @@ class LegoAdventure(ShowBase):
         else:
             self.debugNP.hide()
 
-game = LegoAdventure()
+game = GameReadyBase()
 game.run()
