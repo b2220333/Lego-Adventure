@@ -20,13 +20,13 @@ class GameBase(ShowBase):
         ShowBase.__init__(self)
         self.setupWorld()
         taskMgr.add(self.update, 'update')
+        taskMgr.add(self.positionCamera, 'positionCamera')
 
     def update(self, task):
         self.processInputs()
         # do Physics process
         dt = globalClock.getDt()
         self.world.doPhysics(dt, 4, 1.0 / 240.0)
-        self.positionCamera()
         return task.cont
 
     def processInputs(self):
@@ -97,7 +97,14 @@ class GameBase(ShowBase):
         self.character.setLinearMovement(movingDirection, True)
         self.character.setAngularMovement(turningAngle)
 
-    def positionCamera(self):
+    def positionCamera(self, task):
+        base.camera.setZ(self.floater.getZ())
+        base.camera.lookAt(self.characterNP)
+        if inputState.isSet('cam-left'):
+            base.camera.setX(base.camera, +20 * globalClock.getDt())
+        if inputState.isSet('cam-right'):
+            base.camera.setX(base.camera, -20 * globalClock.getDt())
+
         camvec = self.characterNP.getPos() - base.camera.getPos()
         camvec.setZ(0)
         camdist = camvec.length()
@@ -108,19 +115,21 @@ class GameBase(ShowBase):
         if (camdist < 5.0):
             base.camera.setPos(base.camera.getPos() - camvec * (5 - camdist))
             camdist = 5.0
+
+        # The camera should look in ralph's direction,
+        # but it should also try to stay horizontal, so look at
+        # a floater which hovers above ralph's head.
+
         self.floater.setPos(self.characterNP.getPos())
         self.floater.setZ(self.characterNP.getZ() + 2.0)
         base.camera.lookAt(self.floater)
+
+        return task.cont
 
     # Setup functions for Game
     def setupWorld(self):
         base.setBackgroundColor(0.1, 0.1, 0.8, 1)
         base.setFrameRateMeter(True)
-        # setup environment
-        # self.environ = self.loader.loadModel("models/environment")
-        # self.environ.reparentTo(self.render)
-        # self.environ.setScale(0.25, 0.25, 0.25)
-        # self.environ.setPos(-8, 42, 0)
         # setup debugNode
         self.debugNP = self.render.attachNewNode(BulletDebugNode('Debug'))
         self.debugNP.show()
@@ -147,7 +156,7 @@ class GameBase(ShowBase):
         shape = BulletBoxShape(Vec3(0.3, 0.2, 0.7))
         self.character = BulletCharacterControllerNode(shape, 0.4, 'Player')
         self.characterNP = self.render.attachNewNode(self.character)
-        self.characterNP.setPos(5, 5, 5)
+        self.characterNP.setPos(0, 0, 0)
         self.characterNP.setH(45)
         self.characterNP.setCollideMask(BitMask32.allOn())
         self.world.attachCharacter(self.character)
@@ -184,6 +193,7 @@ class GameBase(ShowBase):
         print "Done Setup Light"
 
     def setupControlKeys(self):
+        base.disableMouse()
         self.accept('escape', self.Exit)
         # self.accept('r', self.Reset)
         self.accept('t', self.Debug)
@@ -192,6 +202,8 @@ class GameBase(ShowBase):
         inputState.watchWithModifiers('turnLeft', 'a')
         inputState.watchWithModifiers('turnRight', 'd')
         inputState.watchWithModifiers('jump', 'space')
+        inputState.watchWithModifiers('cam-left', 'q')
+        inputState.watchWithModifiers('cam-right', 'e')
 
         # action tests
         inputState.watchWithModifiers('fallbackGetup', '1')
