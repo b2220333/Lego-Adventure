@@ -14,9 +14,7 @@ class Game(GameBase):
     def __init__(self):
         GameBase.__init__(self)
         self.movingSpeed = 3
-        # self.jumpHeight = 1
         self.jumpSpeed = 6
-
         self.loadMap()
         self.loadObstacles()
 

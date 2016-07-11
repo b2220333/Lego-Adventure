@@ -21,6 +21,7 @@ class GameBase(ShowBase):
         self.movingSpeed = 1
         self.jumpHeight = 3
         self.jumpSpeed = 3
+        self.inTheAir = False
         self.setupWorld()
         self.cameraHeight = 5
         taskMgr.add(self.update, 'update')
@@ -62,11 +63,8 @@ class GameBase(ShowBase):
 
         if inputState.isSet('cameraHigher'):
             self.cameraHeight += 1
-            print "new camera height {}".format(self.cameraHeight)
         if inputState.isSet('cameraLower'):
             self.cameraHeight -= 1
-            print "new camera height {}".format(self.cameraHeight)
-        # input test end
 
         movingDirection = Vec3(0, 0, 0)
         turningAngle = 0.0
@@ -83,12 +81,14 @@ class GameBase(ShowBase):
         if inputState.isSet('right'):
             movingDirection.setX(2.0)
             isMovingDirection = True
-        if inputState.isSet('jump'):
+        if inputState.isSet('jump') and self.inTheAir is False:
             self.runningPose = False
             self.actorNP.play("jump")
             self.character.setMaxJumpHeight(self.jumpHeight)
             self.character.setJumpSpeed(self.jumpSpeed)
             self.character.doJump()
+            self.inTheAir = True
+            taskMgr.add(self.resetInTheAir, "resetInTheAir")
         if inputState.isSet('turnLeft'):
             turningAngle = 120.0
             isMovingDirection = True
@@ -96,16 +96,19 @@ class GameBase(ShowBase):
             turningAngle = -120.0
             isMovingDirection = True
 
-        if isMovingDirection:
-            if self.runningPose is False:
-                self.actorNP.loop("run")
-                self.runningPose = True
-                print "movingDirection"
+        if self.inTheAir:
+            pass
         else:
-            if self.runningPose:
-                self.actorNP.stop()
-                self.actorNP.pose("walk", 0)
-                self.runningPose = False
+            if isMovingDirection:
+                if self.runningPose is False:
+                    self.actorNP.loop("run")
+                    self.runningPose = True
+                    print "movingDirection"
+            else:
+                if self.runningPose:
+                    self.actorNP.stop()
+                    self.actorNP.pose("walk", 0)
+                    self.runningPose = False
         self.character.setLinearMovement(
             movingDirection * self.movingSpeed, True)
         self.character.setAngularMovement(turningAngle)
@@ -206,6 +209,13 @@ class GameBase(ShowBase):
         inputState.watchWithModifiers('superpunch', '7')
         inputState.watchWithModifiers('walk', '8')
         print "Done Setup Control"
+
+    def resetInTheAir(self, task):
+        if task.time < 1.5:
+            return task.cont
+        else:
+            self.inTheAir = False
+            return task.done
 
     def Exit(self):
         # self.cleanup()
