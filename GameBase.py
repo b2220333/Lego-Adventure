@@ -19,8 +19,8 @@ class GameBase(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
         self.movingSpeed = 1
-        self.jumpHeight = 3
-        self.jumpSpeed = 3
+        self.jumpHeight = 5
+        self.jumpSpeed = 5
         self.inTheAir = False
         self.setupWorld()
         self.cameraHeight = 5
