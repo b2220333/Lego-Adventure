@@ -22,6 +22,7 @@ class GameBase(ShowBase):
         self.jumpHeight = 5
         self.jumpSpeed = 5
         self.inTheAir = False
+        self.playerPos = Vec3(0, 100, 2)
         self.setupWorld()
         self.cameraHeight = 5
         taskMgr.add(self.update, 'update')
@@ -152,7 +153,7 @@ class GameBase(ShowBase):
         shape = BulletBoxShape(Vec3(0.3, 0.2, 0.7))
         self.character = BulletCharacterControllerNode(shape, 0.4, 'Player')
         self.characterNP = self.render.attachNewNode(self.character)
-        self.characterNP.setPos(0, 0, 0)
+        self.characterNP.setPos(self.playerPos)
         self.characterNP.setH(45)
         self.characterNP.setCollideMask(BitMask32.allOn())
         self.world.attachCharacter(self.character)
@@ -211,7 +212,7 @@ class GameBase(ShowBase):
         print "Done Setup Control"
 
     def resetInTheAir(self, task):
-        if task.time < 1.5:
+        if task.time < 1.2:
             return task.cont
         else:
             self.inTheAir = False
