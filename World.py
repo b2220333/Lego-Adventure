@@ -1,5 +1,5 @@
 from GameBase import GameBase
-from panda3d.core import Vec3
+from panda3d.core import Vec3, Point3
 from panda3d.bullet import BulletWorld
 from panda3d.bullet import BulletPlaneShape
 from panda3d.bullet import BulletRigidBodyNode
@@ -13,7 +13,12 @@ from random import randrange
 class Game(GameBase):
     def __init__(self):
         GameBase.__init__(self)
+        self.movingSpeed = 3
+        # self.jumpHeight = 1
+        self.jumpSpeed = 6
+
         self.loadMap()
+        self.loadObstacles()
 
     def loadMap(self):
         self.blue_sky_sphere = self.loader.loadModel(
@@ -80,12 +85,12 @@ class Game(GameBase):
                                    modelPath="models/Skyscraper1/Skyscraper1.egg",
                                    shift=Vec3(0, 0, 0))
 
-        self.addSimpleBuilding(boxSize=Vec3(6, 5, 14),
-                               pos=Vec3(0, 0, 0),
-                               scale=Vec3(0.5, 0.5, 0.5),
-                               heading=180,
-                               name='funHouse',
-                               modelPath="models/funHouse/funHouse.egg")
+        # self.addSimpleBuilding(boxSize=Vec3(6, 5, 14),
+        #                        pos=Vec3(0, 0, 0),
+        #                        scale=Vec3(0.5, 0.5, 0.5),
+        #                        heading=180,
+        #                        name='funHouse',
+        #                        modelPath="models/funHouse/funHouse.egg")
 
         self.addSimpleBuilding(boxSize=Vec3(8, 12, 14),
                                pos=Vec3(250, 250, 0),
@@ -94,6 +99,43 @@ class Game(GameBase):
                                name='rest station',
                                modelPath="models/rest station/rest station.egg",
                                shift=Vec3(0, 0, 11))
+
+    def loadObstacles(self):
+        origin = Point3(2, 0, 0)
+        size = Vec3(2, 4.75, 1)
+        shape = BulletBoxShape(size * 0.55)
+        for i in range(10):
+            pos = origin + size * i
+            pos.setY(0)
+            stairNP = self.render.attachNewNode(
+                BulletRigidBodyNode('Stair%i' % i))
+            stairNP.node().addShape(shape)
+            stairNP.setPos(pos)
+            stairNP.setCollideMask(BitMask32.allOn())
+
+            modelNP = loader.loadModel('models/box.egg')
+            modelNP.reparentTo(stairNP)
+            # modelNP.setPos(0, 0, 0)
+            modelNP.setPos(-size.x / 2.0, -size.y / 2.0, -size.z / 2.0)
+            modelNP.setScale(size)
+            self.world.attachRigidBody(stairNP.node())
+
+        for i in range(10):
+            pos = origin + size * i
+            pos.setY(0)
+            pos.setX(pos.getX() * -1)
+            stairNP = self.render.attachNewNode(
+                BulletRigidBodyNode('Stair%i' % i))
+            stairNP.node().addShape(shape)
+            stairNP.setPos(pos)
+            stairNP.setCollideMask(BitMask32.allOn())
+
+            modelNP = loader.loadModel('models/box.egg')
+            modelNP.reparentTo(stairNP)
+            modelNP.setPos(-size.x / 2.0, -size.y / 2.0, -size.z / 2.0)
+            modelNP.setScale(size)
+
+            self.world.attachRigidBody(stairNP.node())
 
     def addWall(self, size, posX, posY):
         shape = BulletBoxShape(size)

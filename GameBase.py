@@ -18,8 +18,11 @@ import sys
 class GameBase(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
+        self.movingSpeed = 1
+        self.jumpHeight = 3
+        self.jumpSpeed = 3
         self.setupWorld()
-        self.cameraHeight = 30
+        self.cameraHeight = 5
         taskMgr.add(self.update, 'update')
         taskMgr.add(self.positionCamera, 'positionCamera')
 
@@ -32,30 +35,30 @@ class GameBase(ShowBase):
 
     def processInputs(self):
         # input tests
-        if inputState.isSet('fallbackGetup'):
-            print "fallbackGetup is playing"
-            self.actorNP.play('fallbackGetup')
-        if inputState.isSet('fallforwardGetup'):
-            print "fallforwardGetup is playing"
-            self.actorNP.play('fallforwardGetup')
-        if inputState.isSet('fireball'):
-            print "fireball is playing"
-            self.actorNP.play('fireball')
-        if inputState.isSet('jump'):
-            print "jump is playing"
-            self.actorNP.play('jump')
-        if inputState.isSet('punching'):
-            print "punching is playing"
-            self.actorNP.play('punching')
-        if inputState.isSet('run'):
-            print "run is playing"
-            self.actorNP.play('run')
-        if inputState.isSet('superpunch'):
-            print "superpunch is playing"
-            self.actorNP.play('superpunch')
-        if inputState.isSet('walk'):
-            print "walk is playing"
-            self.actorNP.play('walk')
+        # if inputState.isSet('fallbackGetup'):
+        #     print "fallbackGetup is playing"
+        #     self.actorNP.play('fallbackGetup')
+        # if inputState.isSet('fallforwardGetup'):
+        #     print "fallforwardGetup is playing"
+        #     self.actorNP.play('fallforwardGetup')
+        # if inputState.isSet('fireball'):
+        #     print "fireball is playing"
+        #     self.actorNP.play('fireball')
+        # if inputState.isSet('jump'):
+        #     print "jump is playing"
+        #     self.actorNP.play('jump')
+        # if inputState.isSet('punching'):
+        #     print "punching is playing"
+        #     self.actorNP.play('punching')
+        # if inputState.isSet('run'):
+        #     print "run is playing"
+        #     self.actorNP.play('run')
+        # if inputState.isSet('superpunch'):
+        #     print "superpunch is playing"
+        #     self.actorNP.play('superpunch')
+        # if inputState.isSet('walk'):
+        #     print "walk is playing"
+        #     self.actorNP.play('walk')
 
         if inputState.isSet('cameraHigher'):
             self.cameraHeight += 1
@@ -83,7 +86,9 @@ class GameBase(ShowBase):
         if inputState.isSet('jump'):
             self.runningPose = False
             self.actorNP.play("jump")
-            # self.Jump()
+            self.character.setMaxJumpHeight(self.jumpHeight)
+            self.character.setJumpSpeed(self.jumpSpeed)
+            self.character.doJump()
         if inputState.isSet('turnLeft'):
             turningAngle = 120.0
             isMovingDirection = True
@@ -101,16 +106,17 @@ class GameBase(ShowBase):
                 self.actorNP.stop()
                 self.actorNP.pose("walk", 0)
                 self.runningPose = False
-        movingDirection = movingDirection * 30
-        print "Player Position: {}".format(self.characterNP.getPos())
-        self.character.setLinearMovement(movingDirection, True)
+        self.character.setLinearMovement(
+            movingDirection * self.movingSpeed, True)
         self.character.setAngularMovement(turningAngle)
 
     def positionCamera(self, task):
         base.camera.setX(self.characterNP, 0)
-        base.camera.setY(self.characterNP, -30)
+        base.camera.setY(self.characterNP, -10)
         base.camera.setZ(self.characterNP, self.cameraHeight)
-        base.camera.lookAt(self.characterNP)
+        position = self.characterNP.getPos()
+        position.setZ(position.getZ() + 2)
+        base.camera.lookAt(position)
         return task.cont
 
     # Setup functions for Game
@@ -162,8 +168,6 @@ class GameBase(ShowBase):
         self.actorNP.setScale(0.3048)
         self.actorNP.setH(180)
         self.actorNP.setPos(0, 0, 0.4)
-        self.floater = NodePath(PandaNode("floater"))
-        self.floater.reparentTo(render)
         self.runningPose = False
 
     def setupLights(self):
