@@ -19,7 +19,7 @@ class GameBase(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
         self.setupWorld()
-        self.cameraHeight = 5
+        self.cameraHeight = 30
         taskMgr.add(self.update, 'update')
         taskMgr.add(self.positionCamera, 'positionCamera')
 
