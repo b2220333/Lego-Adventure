@@ -22,7 +22,7 @@ class GameBase(ShowBase):
         self.jumpHeight = 5
         self.jumpSpeed = 5
         self.inTheAir = False
-        self.playerPos = Vec3(0, 100, 2)
+        self.playerPos = Vec3(-5, -5, 15)
         self.setupWorld()
         self.cameraHeight = 5
         taskMgr.add(self.update, 'update')
@@ -33,35 +33,10 @@ class GameBase(ShowBase):
         # do Physics process
         dt = globalClock.getDt()
         self.world.doPhysics(dt, 4, 1.0 / 240.0)
+        print "Player Position: {}".format(self.characterNP.getPos())
         return task.cont
 
     def processInputs(self):
-        # input tests
-        # if inputState.isSet('fallbackGetup'):
-        #     print "fallbackGetup is playing"
-        #     self.actorNP.play('fallbackGetup')
-        # if inputState.isSet('fallforwardGetup'):
-        #     print "fallforwardGetup is playing"
-        #     self.actorNP.play('fallforwardGetup')
-        # if inputState.isSet('fireball'):
-        #     print "fireball is playing"
-        #     self.actorNP.play('fireball')
-        # if inputState.isSet('jump'):
-        #     print "jump is playing"
-        #     self.actorNP.play('jump')
-        # if inputState.isSet('punching'):
-        #     print "punching is playing"
-        #     self.actorNP.play('punching')
-        # if inputState.isSet('run'):
-        #     print "run is playing"
-        #     self.actorNP.play('run')
-        # if inputState.isSet('superpunch'):
-        #     print "superpunch is playing"
-        #     self.actorNP.play('superpunch')
-        # if inputState.isSet('walk'):
-        #     print "walk is playing"
-        #     self.actorNP.play('walk')
-
         if inputState.isSet('cameraHigher'):
             self.cameraHeight += 1
         if inputState.isSet('cameraLower'):
@@ -104,7 +79,6 @@ class GameBase(ShowBase):
                 if self.runningPose is False:
                     self.actorNP.loop("run")
                     self.runningPose = True
-                    print "movingDirection"
             else:
                 if self.runningPose:
                     self.actorNP.stop()
