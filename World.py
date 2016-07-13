@@ -1,5 +1,5 @@
 from GameBase import GameBase
-from panda3d.core import Vec3, Point3
+# from panda3d.core import Vec3, Point3
 from panda3d.bullet import BulletWorld
 from panda3d.bullet import BulletPlaneShape
 from panda3d.bullet import BulletRigidBodyNode
@@ -11,6 +11,9 @@ from random import randrange
 from Enemy import Enemy
 from EnemyType1 import EnemyType1
 from EnemyType2 import EnemyType2
+from direct.gui.OnscreenText import OnscreenText
+from direct.gui.DirectGui import *
+from panda3d.core import *
 
 
 class Game(GameBase):
@@ -19,8 +22,34 @@ class Game(GameBase):
         self.movingSpeed = 3
         self.jumpSpeed = 6
         self.cameraHeight = 3
+        self.level = 1
+
+        self.l1 = DirectButton(text="Level - 1",
+                               scale=0.05,
+                               pos=(-0.2, .4, 0),
+                               command=self.setLevel1)
+        self.l2 = DirectButton(text="Level - 2",
+                               scale=0.05,
+                               pos=(0.2, .4, 0),
+                               command=self.setLevel2)
+
+    def setLevel1(self):
+        self.level = 1
+        self.startGame()
+        # self.run()
+
+    def setLevel2(self):
+        self.level = 2
+        self.startGame()
+        # self.run()
+
+    def startGame(self):
+        self.l1.destroy()
+        self.l2.destroy()
+        self.setupBase()
         self.loadMap()
         self.loadStages()
+        # self.run()
 
     def setEnemy(self, pos):
         randNum = randrange(1, 4)
@@ -51,32 +80,32 @@ class Game(GameBase):
         self.addWall(Vec3(100, 1, 5), 0, 100)
         self.addWall(Vec3(100, 1, 5), 0, -100)
 
-        self.addSimpleBox(boxSize=Vec3(27, 29, 15),
-                          pos=Vec3(250, -250, 0),
-                          scale=Vec3(0.1, 0.1, 0.1),
-                          heading=0,
-                          name='Junkyard',
-                          modelPath="models/Junkyard/Junkyard.egg",
-                          shift=Vec3(0, -2.5, 0))
+        # self.addSimpleBox(boxSize=Vec3(27, 29, 15),
+        #                   pos=Vec3(250, -250, 0),
+        #                   scale=Vec3(0.1, 0.1, 0.1),
+        #                   heading=0,
+        #                   name='Junkyard',
+        #                   modelPath="models/Junkyard/Junkyard.egg",
+        #                   shift=Vec3(0, -2.5, 0))
 
-        for x in xrange(1, 3):
-            self.addSimpleBox(boxSize=Vec3(12, 6, 7),
-                              pos=Vec3(-100 + 50 * x,
-                                       90, 0),
-                              scale=Vec3(0.5, 0.5, 0.5),
-                              heading=180,
-                              name='FarmHouse{}'.format(x),
-                              modelPath="models/FarmHouse/FarmHouse.egg")
+        # for x in xrange(1, 3):
+        #     self.addSimpleBox(boxSize=Vec3(12, 6, 7),
+        #                       pos=Vec3(-100 + 50 * x,
+        #                                90, 0),
+        #                       scale=Vec3(0.5, 0.5, 0.5),
+        #                       heading=180,
+        #                       name='FarmHouse{}'.format(x),
+        #                       modelPath="models/FarmHouse/FarmHouse.egg")
 
-        for index in xrange(1, 10):
-            style = randrange(1, 6)
-            self.addSimpleBox(boxSize=Vec3(3.5, 5, 5),
-                              pos=Vec3(21 * index - 100, -100, 0),
-                              scale=Vec3(0.5, 0.5, 0.5),
-                              heading=0,
-                              name='Townhouse{}'.format(index),
-                              modelPath="models/Townhouse{}/Townhouse{}.egg".format(
-                style, style))
+        # for index in xrange(1, 10):
+        #     style = randrange(1, 6)
+        #     self.addSimpleBox(boxSize=Vec3(3.5, 5, 5),
+        #                       pos=Vec3(21 * index - 100, -100, 0),
+        #                       scale=Vec3(0.5, 0.5, 0.5),
+        #                       heading=0,
+        #                       name='Townhouse{}'.format(index),
+        #                       modelPath="models/Townhouse{}/Townhouse{}.egg".format(
+        #         style, style))
 
     def loadStages(self):
         self.addStage(boxSize=Vec3(15, 15, 0.2),
@@ -107,6 +136,9 @@ class Game(GameBase):
                       name='Stage5',
                       modelPath="models/Ground2/Ground2.egg",
                       numberOfEnemy=2)
+
+        if self.level is 2:
+            self.characterNP.setPos(Vec3(-6, -9, 16.5))
 
         self.addStage(boxSize=Vec3(2, 15, 0.2),
                       pos=Vec3(-0, 10, 15.5),
@@ -258,3 +290,5 @@ class Game(GameBase):
 
 myGame = Game()
 myGame.run()
+myGame.getLevel()
+# myGame.startGame()

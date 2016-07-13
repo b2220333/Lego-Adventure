@@ -22,9 +22,11 @@ class GameBase(ShowBase):
         self.jumpHeight = 5
         self.jumpSpeed = 5
         self.inTheAir = False
-        self.playerPos = Vec3(-65, -65, 10)
-        self.setupWorld()
         self.cameraHeight = 5
+        self.playerPos = Vec3(-65, -65, 10)
+
+    def setupBase(self):
+        self.setupWorld()
         taskMgr.add(self.update, 'update')
         taskMgr.add(self.positionCamera, 'positionCamera')
 
@@ -33,7 +35,7 @@ class GameBase(ShowBase):
         # do Physics process
         dt = globalClock.getDt()
         self.world.doPhysics(dt, 4, 1.0 / 240.0)
-        print "Player Position: {}".format(self.characterNP.getPos())
+        # print "Player Position: {}".format(self.characterNP.getPos())
         return task.cont
 
     def processInputs(self):
