@@ -22,7 +22,7 @@ class GameBase(ShowBase):
         self.jumpHeight = 5
         self.jumpSpeed = 5
         self.inTheAir = False
-        self.playerPos = Vec3(-5, -5, 15)
+        self.playerPos = Vec3(-65, -65, 10)
         self.setupWorld()
         self.cameraHeight = 5
         taskMgr.add(self.update, 'update')
