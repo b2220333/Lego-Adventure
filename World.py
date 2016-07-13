@@ -14,6 +14,7 @@ from EnemyType2 import EnemyType2
 from direct.gui.OnscreenText import OnscreenText
 from direct.gui.DirectGui import *
 from panda3d.core import *
+from MapData import Stages
 
 
 class Game(GameBase):
@@ -49,6 +50,8 @@ class Game(GameBase):
         self.setupBase()
         self.loadMap()
         self.loadStages()
+        if self.level is 2:
+            self.characterNP.setPos(Vec3(-6, -9, 16.5))
         # self.run()
 
     def setEnemy(self, pos):
@@ -80,124 +83,15 @@ class Game(GameBase):
         self.addWall(Vec3(100, 1, 5), 0, 100)
         self.addWall(Vec3(100, 1, 5), 0, -100)
 
-        # self.addSimpleBox(boxSize=Vec3(27, 29, 15),
-        #                   pos=Vec3(250, -250, 0),
-        #                   scale=Vec3(0.1, 0.1, 0.1),
-        #                   heading=0,
-        #                   name='Junkyard',
-        #                   modelPath="models/Junkyard/Junkyard.egg",
-        #                   shift=Vec3(0, -2.5, 0))
-
-        # for x in xrange(1, 3):
-        #     self.addSimpleBox(boxSize=Vec3(12, 6, 7),
-        #                       pos=Vec3(-100 + 50 * x,
-        #                                90, 0),
-        #                       scale=Vec3(0.5, 0.5, 0.5),
-        #                       heading=180,
-        #                       name='FarmHouse{}'.format(x),
-        #                       modelPath="models/FarmHouse/FarmHouse.egg")
-
-        # for index in xrange(1, 10):
-        #     style = randrange(1, 6)
-        #     self.addSimpleBox(boxSize=Vec3(3.5, 5, 5),
-        #                       pos=Vec3(21 * index - 100, -100, 0),
-        #                       scale=Vec3(0.5, 0.5, 0.5),
-        #                       heading=0,
-        #                       name='Townhouse{}'.format(index),
-        #                       modelPath="models/Townhouse{}/Townhouse{}.egg".format(
-        #         style, style))
-
     def loadStages(self):
-        self.addStage(boxSize=Vec3(15, 15, 0.2),
-                      pos=Vec3(-63, -63, 9),
-                      name='Stage1',
-                      modelPath="models/Ground2/Ground2.egg",
-                      numberOfEnemy=5)
-        self.addStage(boxSize=Vec3(15, 5, 0.2),
-                      pos=Vec3(-29, -50, 10),
-                      name='Stage2',
-                      modelPath="models/Ground2/Ground2.egg",
-                      numberOfEnemy=3)
-
-        self.addStage(boxSize=Vec3(3, 15, 0.2),
-                      pos=Vec3(-20, -25, 11),
-                      name='Stage3',
-                      modelPath="models/Ground2/Ground2.egg",
-                      numberOfEnemy=3)
-
-        self.addStage(boxSize=Vec3(3, 7, 0.2),
-                      pos=Vec3(-12, -25, 12.5),
-                      name='Stage4',
-                      modelPath="models/Ground2/Ground2.egg",
-                      numberOfEnemy=3)
-
-        self.addStage(boxSize=Vec3(7, 7, 0.2),
-                      pos=Vec3(-10, -10, 14),
-                      name='Stage5',
-                      modelPath="models/Ground2/Ground2.egg",
-                      numberOfEnemy=2)
-
-        if self.level is 2:
-            self.characterNP.setPos(Vec3(-6, -9, 16.5))
-
-        self.addStage(boxSize=Vec3(2, 15, 0.2),
-                      pos=Vec3(-0, 10, 15.5),
-                      name='Stage6',
-                      modelPath="models/Ground2/Ground2.egg",
-                      numberOfEnemy=1)
-
-        self.addStage(boxSize=Vec3(2, 2, 0.2),
-                      pos=Vec3(5, 10, 17),
-                      name='Stage7',
-                      modelPath="models/Ground2/Ground2.egg",
-                      numberOfEnemy=1)
-
-        self.addStage(boxSize=Vec3(1.0, 12, 0.2),
-                      pos=Vec3(17, 22, 18),
-                      name='Stage8',
-                      modelPath="models/Ground2/Ground2.egg",
-                      heading=-45,
-                      numberOfEnemy=1)
-
-        self.addStage(boxSize=Vec3(0.85, 12, 0.2),
-                      pos=Vec3(29, 41, 19),
-                      name='Stage9',
-                      modelPath="models/Ground2/Ground2.egg",
-                      numberOfEnemy=1)
-
-        self.addStage(boxSize=Vec3(0.7, 12, 0.2),
-                      pos=Vec3(40, 62, 20),
-                      name='Stage8',
-                      modelPath="models/Ground2/Ground2.egg",
-                      heading=-45,
-                      numberOfEnemy=1)
-
-        self.addStage(boxSize=Vec3(0.55, 12, 0.2),
-                      pos=Vec3(52, 80, 21),
-                      name='Stage9',
-                      modelPath="models/Ground2/Ground2.egg",
-                      numberOfEnemy=0)
-
-        self.addStage(boxSize=Vec3(0.40, 12, 0.2),
-                      pos=Vec3(62, 80, 22),
-                      name='Stage10',
-                      modelPath="models/Ground2/Ground2.egg",
-                      heading=45,
-                      numberOfEnemy=0)
-
-        self.addStage(boxSize=Vec3(0.40, 100, 0.2),
-                      pos=Vec3(72, 20, 23),
-                      name='Stage11',
-                      modelPath="models/Ground2/Ground2.egg",
-                      heading=0,
-                      numberOfEnemy=0)
-
-        self.addStage(boxSize=Vec3(0.40, 120, 0.2),
-                      pos=Vec3(0, 0, 24),
-                      name='Stage12',
-                      modelPath="models/Ground2/Ground2.egg",
-                      heading=45,
-                      numberOfEnemy=0)
+        stageFilePath = "models/Ground2/Ground2.egg"
+        for stage in Stages:
+            self.addStage(boxSize=stage[0],
+                          pos=stage[1],
+                          name=stage[2],
+                          modelPath=stage[3],
+                          heading=stage[4],
+                          numberOfEnemy=stage[5])
 
     def addWall(self, size, posX, posY):
         shape = BulletBoxShape(size)
