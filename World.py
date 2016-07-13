@@ -11,10 +11,11 @@ from random import randrange
 from Enemy import Enemy
 from EnemyType1 import EnemyType1
 from EnemyType2 import EnemyType2
-from direct.gui.OnscreenText import OnscreenText
 from direct.gui.DirectGui import *
 from panda3d.core import *
 from MapData import Stages
+from panda3d.bullet import BulletGhostNode
+
 
 
 class Game(GameBase):
@@ -24,7 +25,7 @@ class Game(GameBase):
         self.jumpSpeed = 6
         self.cameraHeight = 3
         self.level = 1
-
+        self.springs = []
         self.l1 = DirectButton(text="Level - 1",
                                scale=0.05,
                                pos=(-0.2, .4, 0),
@@ -155,6 +156,21 @@ class Game(GameBase):
             for i in range(numberOfEnemy):
                 enemyPos = Vec3(pos.getX() + i, pos.getY(), pos.getZ())
                 self.setEnemy(enemyPos)
+        self.addSpring(pos)
+
+    def addSpring(self, pos):
+            shape = BulletBoxShape(Vec3(0.3, 0.3, 0.8))
+            node = BulletGhostNode('Spring')
+            node.addShape(shape)
+            springNP = self.render.attachNewNode(node)
+            springNP.setCollideMask(BitMask32.allOff())
+            springNP.setPos(pos.getX(), pos.getY(), pos.getZ()+3.4)
+            modelNP = loader.loadModel('models/spring/spring.egg')
+            modelNP.reparentTo(springNP)
+            modelNP.setScale(1, 1, 1)
+            modelNP.setPos(0, 0, -1)
+            self.world.attachGhost(node)
+            self.springs.append(node)
 
     def addStairs(self, origin, steps, size, spaceRatio, alignment):
         for i in range(steps):
