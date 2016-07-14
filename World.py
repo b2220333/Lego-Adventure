@@ -13,9 +13,8 @@ from EnemyType1 import EnemyType1
 from EnemyType2 import EnemyType2
 from direct.gui.DirectGui import *
 from panda3d.core import *
-from MapData import Stages
+from MapData import *
 from panda3d.bullet import BulletGhostNode
-
 
 
 class Game(GameBase):
@@ -52,8 +51,39 @@ class Game(GameBase):
         self.loadMap()
         self.loadStages()
         if self.level is 2:
-            self.characterNP.setPos(Vec3(-6, -9, 16.5))
-        # self.run()
+            self.characterNP.setPos(self.level_2_pos)
+        taskMgr.add(self.checkCollectable, "checkCollectable")
+        taskMgr.add(self.checkPosition, "checkPosition")
+
+    def checkCollectable(self, task):
+        for spring in self.springs:
+            contactResult = self.world.contactTestPair(
+                self.character, spring.node())
+            if len(contactResult.getContacts()) > 0:
+                print "Sphere is in contact with: ", spring.getName()
+                spring.node().removeAllChildren()
+                self.world.removeGhost(spring.node())
+                self.boosted = True
+                taskMgr.add(self.resetJumpHeight, "resetJumpHeight")
+        return task.cont
+
+    def checkPosition(self, task):
+        # print "pos: {}".format(self.characterNP.getPos())
+        height = self.characterNP.getZ()
+        if height < 5:
+            print "player deaded"
+            self.boosted = False
+            if self.level is 1:
+                self.characterNP.setPos(self.level_1_pos)
+            else:
+                self.characterNP.setPos(self.level_2_pos)
+        else:
+            vec = self.characterNP.getPos() - self.level_2_pos
+            if vec.length() < 3:
+                print "Compeleted level 1"
+                self.level = 2
+            print (vec.length())
+        return task.cont
 
     def setEnemy(self, pos):
         randNum = randrange(1, 4)
@@ -83,6 +113,8 @@ class Game(GameBase):
         self.addWall(Vec3(1, 90, 5), -80, 0)
         self.addWall(Vec3(100, 1, 5), 0, 100)
         self.addWall(Vec3(100, 1, 5), 0, -100)
+        for pos in SpringList:
+            self.addSpring(pos)
 
     def loadStages(self):
         stageFilePath = "models/Ground2/Ground2.egg"
@@ -156,21 +188,21 @@ class Game(GameBase):
             for i in range(numberOfEnemy):
                 enemyPos = Vec3(pos.getX() + i, pos.getY(), pos.getZ())
                 self.setEnemy(enemyPos)
-        self.addSpring(pos)
 
     def addSpring(self, pos):
-            shape = BulletBoxShape(Vec3(0.3, 0.3, 0.8))
-            node = BulletGhostNode('Spring')
-            node.addShape(shape)
-            springNP = self.render.attachNewNode(node)
-            springNP.setCollideMask(BitMask32.allOff())
-            springNP.setPos(pos.getX(), pos.getY(), pos.getZ()+3.4)
-            modelNP = loader.loadModel('models/spring/spring.egg')
-            modelNP.reparentTo(springNP)
-            modelNP.setScale(1, 1, 1)
-            modelNP.setPos(0, 0, -1)
-            self.world.attachGhost(node)
-            self.springs.append(node)
+        print "add spring #{} at: {}".format(len(self.springs), pos)
+        shape = BulletBoxShape(Vec3(0.3, 0.3, 0.8))
+        node = BulletGhostNode('Spring' + str(len(self.springs)))
+        node.addShape(shape)
+        springNP = self.render.attachNewNode(node)
+        springNP.setCollideMask(BitMask32.allOff())
+        springNP.setPos(pos.getX(), pos.getY(), pos.getZ() + 3.4)
+        modelNP = loader.loadModel('models/spring/spring.egg')
+        modelNP.reparentTo(springNP)
+        modelNP.setScale(1, 1, 1)
+        modelNP.setPos(0, 0, -1)
+        self.world.attachGhost(node)
+        self.springs.append(springNP)
 
     def addStairs(self, origin, steps, size, spaceRatio, alignment):
         for i in range(steps):

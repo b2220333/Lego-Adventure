@@ -23,7 +23,9 @@ class GameBase(ShowBase):
         self.jumpSpeed = 5
         self.inTheAir = False
         self.cameraHeight = 5
-        self.playerPos = Vec3(-65, -65, 10)
+        self.boosted = False
+        self.level_1_pos = Vec3(-65, -65, 10)
+        self.level_2_pos = Vec3(-6, -9, 16.5)
 
     def setupBase(self):
         self.setupWorld()
@@ -62,8 +64,12 @@ class GameBase(ShowBase):
         if inputState.isSet('jump') and self.inTheAir is False:
             self.runningPose = False
             self.actorNP.play("jump")
-            self.character.setMaxJumpHeight(self.jumpHeight)
-            self.character.setJumpSpeed(self.jumpSpeed)
+            if self.boosted:
+                self.character.setMaxJumpHeight(self.jumpHeight * 2)
+                self.character.setJumpSpeed(self.jumpSpeed * 2)
+            else:
+                self.character.setMaxJumpHeight(self.jumpHeight)
+                self.character.setJumpSpeed(self.jumpSpeed)
             self.character.doJump()
             self.inTheAir = True
             taskMgr.add(self.resetInTheAir, "resetInTheAir")
@@ -129,7 +135,7 @@ class GameBase(ShowBase):
         shape = BulletBoxShape(Vec3(0.3, 0.2, 0.7))
         self.character = BulletCharacterControllerNode(shape, 0.4, 'Player')
         self.characterNP = self.render.attachNewNode(self.character)
-        self.characterNP.setPos(self.playerPos)
+        self.characterNP.setPos(self.level_1_pos)
         self.characterNP.setH(45)
         self.characterNP.setCollideMask(BitMask32.allOn())
         self.world.attachCharacter(self.character)
@@ -192,6 +198,13 @@ class GameBase(ShowBase):
             return task.cont
         else:
             self.inTheAir = False
+            return task.done
+
+    def resetJumpHeight(self, task):
+        if task.time < 10:
+            return task.cont
+        else:
+            self.boosted = False
             return task.done
 
     def Exit(self):
