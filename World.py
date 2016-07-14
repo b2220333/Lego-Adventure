@@ -24,6 +24,7 @@ class Game(GameBase):
         self.jumpSpeed = 6
         self.cameraHeight = 3
         self.level = 1
+        self.boostTime = 10
         self.springs = []
         self.l1 = DirectButton(text="Level - 1",
                                scale=0.05,
@@ -54,17 +55,12 @@ class Game(GameBase):
             self.characterNP.setPos(self.level_2_pos)
         taskMgr.add(self.checkCollectable, "checkCollectable")
         taskMgr.add(self.checkPosition, "checkPosition")
-        self.timeBar = DirectWaitBar(text="",
+        self.timeBar = DirectWaitBar(text="Time",
                                      value=0,
                                      range=60,
-                                     pos=(0, .4, .8),
+                                     pos=(0, .4, .9),
                                      scale=(1, 0.5, 0.2))
         self.resetCharacterPosition()
-        taskMgr.add(self.boostStatus, "boostStatus")
-
-    # def boostStatus(self, task):
-    #     if self.boosted:
-    #         print type(self.boostBar)
 
     def checkCollectable(self, task):
         for spring in self.springs:
@@ -74,12 +70,26 @@ class Game(GameBase):
                 print "Sphere is in contact with: ", spring.getName()
                 spring.node().removeAllChildren()
                 self.world.removeGhost(spring.node())
-                self.boosted = True
                 taskMgr.add(self.resetJumpHeight, "resetJumpHeight")
+                if self.boosted is False:
+                    self.boosted = True
+                    self.boostBar = DirectWaitBar(text="Boost",
+                                              value=5,
+                                              range=self.boostTime,
+                                              pos=(0, 1, 0.8),
+                                              scale=(0.5, 0.5, 0.2))
+                    taskMgr.add(self.updateBoostStatus, 'updateBoostStatus')
         return task.cont
 
+    def updateBoostStatus(self, task):
+        if task.time < self.boostTime:
+            self.boostBar["value"] = task.time
+            return task.cont
+        else:
+            self.boostBar.destroy()
+            return task.done
+
     def checkPosition(self, task):
-        # print "pos: {}".format(self.characterNP.getPos())
         height = self.characterNP.getZ()
         if height < 5:
             print "player deaded"
