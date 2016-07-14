@@ -54,6 +54,17 @@ class Game(GameBase):
             self.characterNP.setPos(self.level_2_pos)
         taskMgr.add(self.checkCollectable, "checkCollectable")
         taskMgr.add(self.checkPosition, "checkPosition")
+        self.timeBar = DirectWaitBar(text="",
+                                     value=0,
+                                     range=60,
+                                     pos=(0, .4, .8),
+                                     scale=(1, 0.5, 0.2))
+        self.resetCharacterPosition()
+        taskMgr.add(self.boostStatus, "boostStatus")
+
+    # def boostStatus(self, task):
+    #     if self.boosted:
+    #         print type(self.boostBar)
 
     def checkCollectable(self, task):
         for spring in self.springs:
@@ -73,10 +84,7 @@ class Game(GameBase):
         if height < 5:
             print "player deaded"
             self.boosted = False
-            if self.level is 1:
-                self.characterNP.setPos(self.level_1_pos)
-            else:
-                self.characterNP.setPos(self.level_2_pos)
+            self.resetCharacterPosition()
         else:
             vec = self.characterNP.getPos() - self.level_2_pos
             if vec.length() < 3:
@@ -84,6 +92,22 @@ class Game(GameBase):
                 self.level = 2
             print (vec.length())
         return task.cont
+
+    def resetCharacterPosition(self):
+        if self.level is 1:
+            self.characterNP.setPos(self.level_1_pos)
+        else:
+            self.characterNP.setPos(self.level_2_pos)
+        taskMgr.add(self.countDown, 'countDown')
+
+    def countDown(self, task):
+        if task.time < 60:
+            self.timeBar['value'] = task.time
+            return task.cont
+        else:
+            print "Time over, Game Restart"
+            self.resetCharacterPosition()
+            return task.done
 
     def setEnemy(self, pos):
         randNum = randrange(1, 4)
