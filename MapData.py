@@ -15,8 +15,8 @@ Stages = [(Vec3(15, 15, 0.2), Vec3(-63, -63, 9), 'Stage1', stageFilePath, 0, 0),
           (Vec3(0.7, 12, 0.2), Vec3(40, 62, 20), 'Stage8', stageFilePath, -45, 0),
           (Vec3(0.55, 12, 0.2), Vec3(52, 80, 21), 'Stage9', stageFilePath, 0, 0),
           (Vec3(0.40, 12, 0.2), Vec3(62, 80, 22), 'Stage10', stageFilePath, 45, 0),
-          (Vec3(0.40, 100, 0.2), Vec3(72, 20, 23), 'Stage11', stageFilePath, 0, 0),
-          (Vec3(0.40, 120, 0.2), Vec3(0, 0, 24), 'Stage12', stageFilePath, 45, 0)]
+          (Vec3(0.40, 80, 0.2), Vec3(72, 00, 23), 'Stage11', stageFilePath, 0, 0),
+          (Vec3(0.40, 100, 0.2), Vec3(0, 0, 24), 'Stage12', stageFilePath, 45, 0)]
 
 SpringList = [Vec3(-12, -25, 12.5),
               Vec3(5, 10, 17),

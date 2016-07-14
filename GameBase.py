@@ -26,6 +26,7 @@ class GameBase(ShowBase):
         self.boosted = False
         self.level_1_pos = Vec3(-65, -65, 10)
         self.level_2_pos = Vec3(-6, -9, 16.5)
+        self.level_3_pos = Vec3(-70, 70, 25)
 
     def setupBase(self):
         self.setupWorld()

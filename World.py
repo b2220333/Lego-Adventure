@@ -25,6 +25,7 @@ class Game(GameBase):
         self.cameraHeight = 3
         self.level = 1
         self.boostTime = 10
+
         self.springs = []
         self.l1 = DirectButton(text="Level - 1",
                                scale=0.05,
@@ -74,10 +75,10 @@ class Game(GameBase):
                 if self.boosted is False:
                     self.boosted = True
                     self.boostBar = DirectWaitBar(text="Boost",
-                                              value=5,
-                                              range=self.boostTime,
-                                              pos=(0, 1, 0.8),
-                                              scale=(0.5, 0.5, 0.2))
+                                                  value=5,
+                                                  range=self.boostTime,
+                                                  pos=(0, 1, 0.8),
+                                                  scale=(0.5, 0.5, 0.2))
                     taskMgr.add(self.updateBoostStatus, 'updateBoostStatus')
         return task.cont
 
@@ -96,11 +97,17 @@ class Game(GameBase):
             self.boosted = False
             self.resetCharacterPosition()
         else:
-            vec = self.characterNP.getPos() - self.level_2_pos
-            if vec.length() < 3:
-                print "Compeleted level 1"
-                self.level = 2
-            print (vec.length())
+            if self.level is 1:
+                vec = self.characterNP.getPos() - self.level_2_pos
+                if vec.length() < 3:
+                    print "Compeleted level 1"
+                    self.level = 2
+                print "{} until level 1 check point".format(vec.length())
+            else:
+                vec = self.characterNP.getPos() - self.level_3_pos
+                if vec.length() < 3:
+                    print "Compeleted level 2"
+                print "{} until compelete check point".format(vec.length())
         return task.cont
 
     def resetCharacterPosition(self):
