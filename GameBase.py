@@ -1,17 +1,24 @@
 # LIHAO LIN Created on 07/08/2016 All right reserved
 from direct.actor.Actor import Actor
+from direct.gui.DirectGui import *
 from direct.showbase.InputStateGlobal import inputState
 from direct.showbase.ShowBase import ShowBase
+from EnemyType1 import EnemyType1
+from EnemyType2 import EnemyType2
 from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletCharacterControllerNode
 from panda3d.bullet import BulletDebugNode
+from panda3d.bullet import BulletGhostNode
 from panda3d.bullet import BulletPlaneShape
 from panda3d.bullet import BulletRigidBodyNode
+from panda3d.bullet import BulletSphereShape
 from panda3d.bullet import BulletWorld
+from panda3d.core import *
 from panda3d.core import AmbientLight, DirectionalLight
 from panda3d.core import BitMask32
 from panda3d.core import NodePath, PandaNode
 from panda3d.core import Vec3, Vec4
+from random import randrange
 from Settings import *
 import sys
 
@@ -26,6 +33,16 @@ class GameBase(ShowBase):
         self.level_1_pos = Vec3(-65, -65, 10)
         self.level_2_pos = Vec3(-6, -9, 16.5)
         self.level_3_pos = Vec3(-70, 70, 25)
+
+        self.springs = []
+        self.l1 = DirectButton(text="Level - 1",
+                               scale=0.05,
+                               pos=(-0.2, .4, 0),
+                               command=self.startLevel1)
+        self.l2 = DirectButton(text="Level - 2",
+                               scale=0.05,
+                               pos=(0.2, .4, 0),
+                               command=self.startLevel2)
 
     def setupBase(self):
         self.setupWorld()
@@ -217,3 +234,242 @@ class GameBase(ShowBase):
             self.debugNP.show()
         else:
             self.debugNP.hide()
+
+    def startLevel1(self):
+        self.level = 1
+        self.startGame()
+        # self.run()
+
+    def startLevel2(self):
+        self.level = 2
+        self.startGame()
+        # self.run()
+
+    def startGame(self):
+        self.l1.destroy()
+        self.l2.destroy()
+        self.setupBase()
+        self.loadMap()
+        self.loadStages()
+        if self.level is 2:
+            self.characterNP.setPos(self.level_2_pos)
+        taskMgr.add(self.checkCollectable, "checkCollectable")
+        taskMgr.add(self.checkPosition, "checkPosition")
+        self.timeBar = DirectWaitBar(text="Time",
+                                     value=0,
+                                     range=60,
+                                     pos=(0, .4, .9),
+                                     scale=(1, 0.5, 0.2))
+        self.resetCharacterPosition()
+
+    def checkCollectable(self, task):
+        for spring in self.springs:
+            contactResult = self.world.contactTestPair(
+                self.character, spring.node())
+            if len(contactResult.getContacts()) > 0:
+                print "Sphere is in contact with: ", spring.getName()
+                spring.node().removeAllChildren()
+                self.world.removeGhost(spring.node())
+                taskMgr.add(self.resetJumpHeight, "resetJumpHeight")
+                if self.boosted is False:
+                    self.boosted = True
+                    self.boostBar = DirectWaitBar(text="Boost",
+                                                  value=5,
+                                                  range=BOOST_TIME,
+                                                  pos=(0, 1, 0.8),
+                                                  scale=(0.5, 0.5, 0.2))
+                    taskMgr.add(self.updateBoostStatus, 'updateBoostStatus')
+        return task.cont
+
+    def updateBoostStatus(self, task):
+        if task.time < BOOST_TIME:
+            self.boostBar["value"] = task.time
+            return task.cont
+        else:
+            self.boostBar.destroy()
+            return task.done
+
+    def checkPosition(self, task):
+        height = self.characterNP.getZ()
+        if height < 5:
+            print "player deaded"
+            self.boosted = False
+            self.resetCharacterPosition()
+        else:
+            if self.level is 1:
+                vec = self.characterNP.getPos() - self.level_2_pos
+                if vec.length() < 3:
+                    print "Compeleted level 1"
+                    self.level = 2
+                # print "{} until level 1 check point".format(vec.length())
+            else:
+                vec = self.characterNP.getPos() - self.level_3_pos
+                if vec.length() < 3:
+                    print "Compeleted level 2"
+                # print "{} until compelete check point".format(vec.length())
+        return task.cont
+
+    def resetCharacterPosition(self):
+        if self.level is 1:
+            self.characterNP.setPos(self.level_1_pos)
+        else:
+            self.characterNP.setPos(self.level_2_pos)
+        taskMgr.add(self.countDown, 'countDown')
+
+    def countDown(self, task):
+        if task.time < 60:
+            self.timeBar['value'] = task.time
+            return task.cont
+        else:
+            print "Time over, Game Restart"
+            self.resetCharacterPosition()
+            return task.done
+
+    def addEnemy(self, pos):
+        randNum = randrange(1, 4)
+        if randNum is 3:
+            EnemyType1(world=self.world,
+                       render=self.render,
+                       pos=pos)
+        else:
+            EnemyType2(world=self.world,
+                       render=self.render,
+                       pos=pos)
+
+    def loadMap(self):
+        self.blue_sky_sphere = self.loader.loadModel(
+            "models/blue_sky_sphere/blue_sky_sphere.egg")
+        self.blue_sky_sphere.reparentTo(self.render)
+        self.blue_sky_sphere.setScale(0.04, 0.04, 0.04)
+        self.blue_sky_sphere.setPos(0, 0, 0)
+
+        self.garden = self.loader.loadModel(
+            "models/garden/garden.egg")
+        self.garden.reparentTo(self.render)
+        self.garden.setScale(2, 2, 2)
+        self.garden.setPos(0, 0, 0)
+
+        self.addWall(Vec3(1, 90, 5), 80, 0)
+        self.addWall(Vec3(1, 90, 5), -80, 0)
+        self.addWall(Vec3(100, 1, 5), 0, 100)
+        self.addWall(Vec3(100, 1, 5), 0, -100)
+        for pos in SpringList:
+            self.addSpring(pos)
+
+    def loadStages(self):
+        for stage in Stages:
+            self.addStage(boxSize=stage[0],
+                          pos=stage[1],
+                          name=stage[2],
+                          modelPath=stage[3],
+                          heading=stage[4],
+                          numberOfEnemy=stage[5])
+
+    def addWall(self, size, posX, posY):
+        shape = BulletBoxShape(size)
+        wallNP = self.render.attachNewNode(BulletRigidBodyNode('wall'))
+        wallNP.node().addShape(shape)
+        wallNP.setPos(posX, posY, size.getZ())
+        wallNP.setCollideMask(BitMask32.allOn())
+        if (posY is 0):
+            left = -(size.getY())
+            right = -left
+            pos = left - 5
+            while pos <= right:
+                wallModel = loader.loadModel('models/fence.egg')
+                wallModel.reparentTo(wallNP)
+                wallModel.setPos(0, pos, -(size.getZ()))
+                wallModel.setScale(1, 1, 1)
+                wallModel.setH(90)
+                pos += 13.5
+        else:
+            left = -(size.getX())
+            right = -left
+            pos = left - 5
+            while pos <= right:
+                wallModel = loader.loadModel('models/fence.egg')
+                wallModel.reparentTo(wallNP)
+                wallModel.setPos(pos, 0, -(size.getZ()))
+                wallModel.setScale(1, 1, 1)
+                pos += 13.5
+
+        self.world.attachRigidBody(wallNP.node())
+
+    def addSimpleBox(self, boxSize, pos, scale, heading, name, modelPath, shift=Vec3(0, 0, 0)):
+        shape = BulletBoxShape(boxSize)
+        objNP = self.render.attachNewNode(BulletRigidBodyNode(name))
+        objNP.node().addShape(shape)
+        objNP.setPos(pos.getX(), pos.getY(), pos.getZ() + boxSize.getZ())
+        objNP.setCollideMask(BitMask32.allOn())
+        objModel = self.loader.loadModel(modelPath)
+        objModel.setScale(scale.getX(), scale.getY(), scale.getZ())
+        objModel.setPos(shift.getX(), shift.getY(),
+                        shift.getZ() - boxSize.getZ())
+        objModel.setH(heading)
+        objModel.reparentTo(objNP)
+        self.world.attachRigidBody(objNP.node())
+
+    def addStage(self, boxSize, pos, name, modelPath, heading=0, numberOfEnemy=0):
+        shape = BulletBoxShape(boxSize)
+        objNP = self.render.attachNewNode(BulletRigidBodyNode(name))
+        objNP.node().addShape(shape)
+        objNP.setPos(pos.getX(), pos.getY(), pos.getZ())
+        objNP.setH(heading)
+        objNP.setCollideMask(BitMask32.allOn())
+        objModel = self.loader.loadModel(modelPath)
+        objModel.setScale(2 * boxSize.getX(),
+                          2 * boxSize.getY(),
+                          2 * boxSize.getZ())
+        objModel.setPos(0, 0, boxSize.getZ() / -1)
+        objModel.reparentTo(objNP)
+        self.world.attachRigidBody(objNP.node())
+        if numberOfEnemy > 0:
+            for i in range(numberOfEnemy):
+                enemyPos = Vec3(pos.getX() + i, pos.getY(), pos.getZ())
+                self.addEnemy(enemyPos)
+
+    def addSpring(self, pos):
+        print "add spring #{} at: {}".format(len(self.springs), pos)
+        shape = BulletBoxShape(Vec3(0.3, 0.3, 0.8))
+        node = BulletGhostNode('Spring' + str(len(self.springs)))
+        node.addShape(shape)
+        springNP = self.render.attachNewNode(node)
+        springNP.setCollideMask(BitMask32.allOff())
+        springNP.setPos(pos.getX(), pos.getY(), pos.getZ() + 3.4)
+        modelNP = loader.loadModel('models/spring/spring.egg')
+        modelNP.reparentTo(springNP)
+        modelNP.setScale(1, 1, 1)
+        modelNP.setPos(0, 0, -1)
+        self.world.attachGhost(node)
+        self.springs.append(springNP)
+
+    def addStairs(self, origin, steps, size, spaceRatio, alignment):
+        for i in range(steps):
+            pos = origin + size * spaceRatio * i
+            if alignment == 'x':
+                pos.setX(origin.getX())
+            if alignment == 'y':
+                pos.setY(origin.getY())
+            if alignment == 'z':
+                pos.setZ(origin.getZ())
+            self.stair(name="stare{}".format(i),
+                       size=size,
+                       pos=pos)
+
+    def stair(self, name, size, pos):
+        shape = BulletBoxShape(size * 0.5)
+        stairNP = render.attachNewNode(
+            BulletRigidBodyNode(name))
+        stairNP.node().addShape(shape)
+        stairNP.setPos(pos)
+        stairNP.setCollideMask(BitMask32.allOn())
+        modelNP = loader.loadModel('models/box.egg')
+        modelNP.reparentTo(stairNP)
+        modelNP.setPos(-size.x / 2.0, -size.y / 2.0, -size.z / 2.0)
+        modelNP.setScale(size)
+        self.world.attachRigidBody(stairNP.node())
+
+
+myGame = GameBase()
+myGame.run()
+myGame.getLevel()
