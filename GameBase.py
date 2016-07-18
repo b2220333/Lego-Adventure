@@ -136,7 +136,7 @@ class GameBase(ShowBase):
         shape = BulletBoxShape(Vec3(0.3, 0.2, 0.7))
         self.character = BulletCharacterControllerNode(shape, 0.4, 'Player')
         self.characterNP = self.render.attachNewNode(self.character)
-        self.characterNP.setPos(self.level_1_pos)
+        # self.characterNP.setPos(self.level_1_pos)
         self.characterNP.setH(45)
         self.characterNP.setCollideMask(BitMask32.allOn())
         self.world.attachCharacter(self.character)

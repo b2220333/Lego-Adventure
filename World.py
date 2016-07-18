@@ -8,7 +8,7 @@ from panda3d.bullet import BulletSphereShape
 from panda3d.bullet import BulletDebugNode
 from panda3d.core import BitMask32
 from random import randrange
-from Enemy import Enemy
+# from Enemy import Enemy
 from EnemyType1 import EnemyType1
 from EnemyType2 import EnemyType2
 from direct.gui.DirectGui import *
@@ -102,12 +102,12 @@ class Game(GameBase):
                 if vec.length() < 3:
                     print "Compeleted level 1"
                     self.level = 2
-                print "{} until level 1 check point".format(vec.length())
+                # print "{} until level 1 check point".format(vec.length())
             else:
                 vec = self.characterNP.getPos() - self.level_3_pos
                 if vec.length() < 3:
                     print "Compeleted level 2"
-                print "{} until compelete check point".format(vec.length())
+                # print "{} until compelete check point".format(vec.length())
         return task.cont
 
     def resetCharacterPosition(self):
@@ -126,7 +126,7 @@ class Game(GameBase):
             self.resetCharacterPosition()
             return task.done
 
-    def setEnemy(self, pos):
+    def addEnemy(self, pos):
         randNum = randrange(1, 4)
         if randNum is 3:
             EnemyType1(world=self.world,
@@ -158,7 +158,6 @@ class Game(GameBase):
             self.addSpring(pos)
 
     def loadStages(self):
-        stageFilePath = "models/Ground2/Ground2.egg"
         for stage in Stages:
             self.addStage(boxSize=stage[0],
                           pos=stage[1],
@@ -212,7 +211,6 @@ class Game(GameBase):
         self.world.attachRigidBody(objNP.node())
 
     def addStage(self, boxSize, pos, name, modelPath, heading=0, numberOfEnemy=0):
-        boxSize.setZ(0.01)
         shape = BulletBoxShape(boxSize)
         objNP = self.render.attachNewNode(BulletRigidBodyNode(name))
         objNP.node().addShape(shape)
@@ -220,15 +218,16 @@ class Game(GameBase):
         objNP.setH(heading)
         objNP.setCollideMask(BitMask32.allOn())
         objModel = self.loader.loadModel(modelPath)
-        objModel.setScale(0.00174 * boxSize.getX(),
-                          0.00174 * boxSize.getY(), 1)
-        objModel.setPos(0, 0, 0)
+        objModel.setScale(2 * boxSize.getX(),
+                          2 * boxSize.getY(),
+                          2 * boxSize.getZ())
+        objModel.setPos(0, 0, boxSize.getZ() / -1)
         objModel.reparentTo(objNP)
         self.world.attachRigidBody(objNP.node())
         if numberOfEnemy > 0:
             for i in range(numberOfEnemy):
                 enemyPos = Vec3(pos.getX() + i, pos.getY(), pos.getZ())
-                self.setEnemy(enemyPos)
+                self.addEnemy(enemyPos)
 
     def addSpring(self, pos):
         print "add spring #{} at: {}".format(len(self.springs), pos)
