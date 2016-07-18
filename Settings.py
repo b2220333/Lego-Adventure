@@ -22,3 +22,16 @@ Stages = [  # (Vec3(1, 1, 1), Vec3(-60, -60, 12), 'Stage0', stageFilePath, 0, 0)
 SpringList = [Vec3(-12, -25, 12.5),
               Vec3(5, 10, 17),
               Vec3(40, 62, 20)]
+
+BOOSTED = False
+CAMERA_HEIGHT = 5
+IN_THE_AIR = False
+JUMP_HEIGHT = 5
+JUMP_SPEED = 5
+CURRENT_LEVEL = 1
+LEVEL_1_POS = Vec3(-65, -65, 10)
+LEVEL_2_POS = Vec3(-6, -9, 16.5)
+LEVEL_3_POS = Vec3(-70, 70, 25)
+MOVING_SPEED = 3
+
+BOOST_TIME = 10

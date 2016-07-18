@@ -12,15 +12,14 @@ from panda3d.core import AmbientLight, DirectionalLight
 from panda3d.core import BitMask32
 from panda3d.core import NodePath, PandaNode
 from panda3d.core import Vec3, Vec4
+from Settings import *
 import sys
 
 
 class GameBase(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
-        self.movingSpeed = 1
         self.jumpHeight = 5
-        self.jumpSpeed = 5
         self.inTheAir = False
         self.cameraHeight = 5
         self.boosted = False
@@ -67,10 +66,10 @@ class GameBase(ShowBase):
             self.actorNP.play("jump")
             if self.boosted:
                 self.character.setMaxJumpHeight(self.jumpHeight * 2)
-                self.character.setJumpSpeed(self.jumpSpeed * 2)
+                self.character.setJumpSpeed(JUMP_SPEED * 2)
             else:
                 self.character.setMaxJumpHeight(self.jumpHeight)
-                self.character.setJumpSpeed(self.jumpSpeed)
+                self.character.setJumpSpeed(JUMP_SPEED)
             self.character.doJump()
             self.inTheAir = True
             taskMgr.add(self.resetInTheAir, "resetInTheAir")
@@ -94,7 +93,7 @@ class GameBase(ShowBase):
                     self.actorNP.pose("walk", 0)
                     self.runningPose = False
         self.character.setLinearMovement(
-            movingDirection * self.movingSpeed, True)
+            movingDirection * MOVING_SPEED, True)
         self.character.setAngularMovement(turningAngle)
 
     def positionCamera(self, task):
@@ -134,7 +133,7 @@ class GameBase(ShowBase):
 
     def addPlayer(self):
         shape = BulletBoxShape(Vec3(0.3, 0.2, 0.7))
-        self.character = BulletCharacterControllerNode(shape, 0.4, 'Player')
+        self.character = BulletCharacterControllerNode(shape, 0.4, 'Player-1')
         self.characterNP = self.render.attachNewNode(self.character)
         # self.characterNP.setPos(self.level_1_pos)
         self.characterNP.setH(45)

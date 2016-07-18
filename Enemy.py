@@ -16,12 +16,15 @@ from panda3d.core import Vec3, Vec4
 class Enemy:
     def __init__(self, nodePath, world, render, pos):
         shape = BulletBoxShape(Vec3(0.3, 0.2, 0.7))
-        self.character = BulletCharacterControllerNode(shape, 0.4, 'Player')
+        self.character = BulletCharacterControllerNode(shape, 0.4, 'Player-2')
+        # self.character = BulletRigidBodyNode("Player")
+        # self.character.addShape(shape)
         self.characterNP = render.attachNewNode(self.character)
         self.characterNP.setPos(pos)
         self.characterNP.setH(45)
         self.characterNP.setCollideMask(BitMask32.allOn())
         world.attachCharacter(self.character)
+        # world.attachRigidBody(self.character)
         self.actorNP = nodePath
         self.actorNP.reparentTo(self.characterNP)
         self.actorNP.setScale(0.3048)

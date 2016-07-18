@@ -13,35 +13,34 @@ from EnemyType1 import EnemyType1
 from EnemyType2 import EnemyType2
 from direct.gui.DirectGui import *
 from panda3d.core import *
-from MapData import *
+from Settings import *
 from panda3d.bullet import BulletGhostNode
 
 
 class Game(GameBase):
     def __init__(self):
         GameBase.__init__(self)
-        self.movingSpeed = 3
-        self.jumpSpeed = 6
+        JUMP_SPEED = 6
         self.cameraHeight = 3
         self.level = 1
-        self.boostTime = 10
+        # BOOST_TIME = 10
 
         self.springs = []
         self.l1 = DirectButton(text="Level - 1",
                                scale=0.05,
                                pos=(-0.2, .4, 0),
-                               command=self.setLevel1)
+                               command=self.startLevel1)
         self.l2 = DirectButton(text="Level - 2",
                                scale=0.05,
                                pos=(0.2, .4, 0),
-                               command=self.setLevel2)
+                               command=self.startLevel2)
 
-    def setLevel1(self):
+    def startLevel1(self):
         self.level = 1
         self.startGame()
         # self.run()
 
-    def setLevel2(self):
+    def startLevel2(self):
         self.level = 2
         self.startGame()
         # self.run()
@@ -76,14 +75,14 @@ class Game(GameBase):
                     self.boosted = True
                     self.boostBar = DirectWaitBar(text="Boost",
                                                   value=5,
-                                                  range=self.boostTime,
+                                                  range=BOOST_TIME,
                                                   pos=(0, 1, 0.8),
                                                   scale=(0.5, 0.5, 0.2))
                     taskMgr.add(self.updateBoostStatus, 'updateBoostStatus')
         return task.cont
 
     def updateBoostStatus(self, task):
-        if task.time < self.boostTime:
+        if task.time < BOOST_TIME:
             self.boostBar["value"] = task.time
             return task.cont
         else:
