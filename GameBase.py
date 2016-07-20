@@ -3,8 +3,6 @@ from direct.actor.Actor import Actor
 from direct.gui.DirectGui import *
 from direct.showbase.InputStateGlobal import inputState
 from direct.showbase.ShowBase import ShowBase
-from EnemyType1 import EnemyType1
-from EnemyType2 import EnemyType2
 from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletCharacterControllerNode
 from panda3d.bullet import BulletDebugNode
@@ -29,11 +27,8 @@ class GameBase(ShowBase):
         self.jumpHeight = 5
         self.inTheAir = False
         self.cameraHeight = 5
-        self.boosted = False
-        self.level_1_pos = Vec3(-65, -65, 10)
-        self.level_2_pos = Vec3(-6, -9, 16.5)
-        self.level_3_pos = Vec3(-70, 70, 25)
-
+        self.booosted = False
+        self.currentLevel = 1
         self.springs = []
         self.l1 = DirectButton(text="Level - 1",
                                scale=0.05,
@@ -81,7 +76,7 @@ class GameBase(ShowBase):
         if inputState.isSet('jump') and self.inTheAir is False:
             self.runningPose = False
             self.actorNP.play("jump")
-            if self.boosted:
+            if self.booosted:
                 self.character.setMaxJumpHeight(self.jumpHeight * 2)
                 self.character.setJumpSpeed(JUMP_SPEED * 2)
             else:
@@ -109,8 +104,7 @@ class GameBase(ShowBase):
                     self.actorNP.stop()
                     self.actorNP.pose("walk", 0)
                     self.runningPose = False
-        self.character.setLinearMovement(
-            movingDirection * MOVING_SPEED, True)
+        self.character.setLinearMovement(movingDirection * MOVING_SPEED, True)
         self.character.setAngularMovement(turningAngle)
 
     def positionCamera(self, task):
@@ -152,7 +146,6 @@ class GameBase(ShowBase):
         shape = BulletBoxShape(Vec3(0.3, 0.2, 0.7))
         self.character = BulletCharacterControllerNode(shape, 0.4, 'Player-1')
         self.characterNP = self.render.attachNewNode(self.character)
-        # self.characterNP.setPos(self.level_1_pos)
         self.characterNP.setH(45)
         self.characterNP.setCollideMask(BitMask32.allOn())
         self.world.attachCharacter(self.character)
@@ -172,6 +165,30 @@ class GameBase(ShowBase):
         self.actorNP.setH(180)
         self.actorNP.setPos(0, 0, 0.4)
         self.runningPose = False
+        self.addTestEnemy()
+
+    def addTestEnemy(self):
+        shape = BulletBoxShape(Vec3(0.3, 0.2, 0.7))
+        self.testEnemy = BulletCharacterControllerNode(shape, 0.4, 'Enemy-1')
+        self.testEnemyNP = self.render.attachNewNode(self.testEnemy)
+        self.testEnemyNP.setH(45)
+        self.testEnemyNP.setCollideMask(BitMask32.allOn())
+        self.world.attachCharacter(self.testEnemy)
+        self.testActorNP = Actor('models/Actors/lego/Bricker/Bricker3.egg',
+                             {
+                                 'fallbackGetup': 'models/Actors/lego/Bricker/Bricker-FallbackGetup.egg',
+                                 'fallforwardGetup': 'models/Actors/lego/Bricker/Bricker-FallforwardGetup.egg',
+                                 'fireball': 'models/Actors/lego/Bricker/Bricker-fireball.egg',
+                                 'jump': 'models/Actors/lego/Bricker/Bricker-jump.egg',
+                                 'punching': 'models/Actors/lego/Bricker/Bricker-punching.egg',
+                                 'run': 'models/Actors/lego/Bricker/Bricker-run.egg',
+                                 'superpunch': 'models/Actors/lego/Bricker/Bricker-superpunch.egg',
+                                 'walk': 'models/Actors/lego/Bricker/Bricker-walk.egg'
+                             })
+        self.testActorNP.reparentTo(self.testEnemyNP)
+        self.testActorNP.setScale(0.3048)
+        self.testActorNP.setH(180)
+        self.testActorNP.setPos(0, 0, 0.4)
 
     def setupLights(self):
         alight = AmbientLight('ambientLight')
@@ -221,7 +238,7 @@ class GameBase(ShowBase):
         if task.time < 10:
             return task.cont
         else:
-            self.boosted = False
+            self.booosted = False
             return task.done
 
     def Exit(self):
@@ -252,7 +269,7 @@ class GameBase(ShowBase):
         self.loadMap()
         self.loadStages()
         if self.level is 2:
-            self.characterNP.setPos(self.level_2_pos)
+            self.characterNP.setPos(LEVEL_2_POS)
         taskMgr.add(self.checkCollectable, "checkCollectable")
         taskMgr.add(self.checkPosition, "checkPosition")
         self.timeBar = DirectWaitBar(text="Time",
@@ -271,8 +288,8 @@ class GameBase(ShowBase):
                 spring.node().removeAllChildren()
                 self.world.removeGhost(spring.node())
                 taskMgr.add(self.resetJumpHeight, "resetJumpHeight")
-                if self.boosted is False:
-                    self.boosted = True
+                if self.booosted is False:
+                    self.booosted = True
                     self.boostBar = DirectWaitBar(text="Boost",
                                                   value=5,
                                                   range=BOOST_TIME,
@@ -293,17 +310,17 @@ class GameBase(ShowBase):
         height = self.characterNP.getZ()
         if height < 5:
             print "player deaded"
-            self.boosted = False
+            self.booosted = False
             self.resetCharacterPosition()
         else:
             if self.level is 1:
-                vec = self.characterNP.getPos() - self.level_2_pos
+                vec = self.characterNP.getPos() - LEVEL_2_POS
                 if vec.length() < 3:
                     print "Compeleted level 1"
                     self.level = 2
                 # print "{} until level 1 check point".format(vec.length())
             else:
-                vec = self.characterNP.getPos() - self.level_3_pos
+                vec = self.characterNP.getPos() - LEVEL_3_POS
                 if vec.length() < 3:
                     print "Compeleted level 2"
                 # print "{} until compelete check point".format(vec.length())
@@ -311,9 +328,12 @@ class GameBase(ShowBase):
 
     def resetCharacterPosition(self):
         if self.level is 1:
-            self.characterNP.setPos(self.level_1_pos)
+            self.characterNP.setPos(LEVEL_1_POS)
+            pos = LEVEL_1_POS
+            pos.setZ(pos.getZ()+1)
+            self.testEnemyNP.setPos(pos)
         else:
-            self.characterNP.setPos(self.level_2_pos)
+            self.characterNP.setPos(LEVEL_2_POS)
         taskMgr.add(self.countDown, 'countDown')
 
     def countDown(self, task):
@@ -324,17 +344,6 @@ class GameBase(ShowBase):
             print "Time over, Game Restart"
             self.resetCharacterPosition()
             return task.done
-
-    def addEnemy(self, pos):
-        randNum = randrange(1, 4)
-        if randNum is 3:
-            EnemyType1(world=self.world,
-                       render=self.render,
-                       pos=pos)
-        else:
-            EnemyType2(world=self.world,
-                       render=self.render,
-                       pos=pos)
 
     def loadMap(self):
         self.blue_sky_sphere = self.loader.loadModel(
@@ -426,7 +435,7 @@ class GameBase(ShowBase):
         if numberOfEnemy > 0:
             for i in range(numberOfEnemy):
                 enemyPos = Vec3(pos.getX() + i, pos.getY(), pos.getZ())
-                self.addEnemy(enemyPos)
+                self.addEnemy(pos)
 
     def addSpring(self, pos):
         print "add spring #{} at: {}".format(len(self.springs), pos)
@@ -468,6 +477,45 @@ class GameBase(ShowBase):
         modelNP.setPos(-size.x / 2.0, -size.y / 2.0, -size.z / 2.0)
         modelNP.setScale(size)
         self.world.attachRigidBody(stairNP.node())
+
+
+    def addEnemy(self, pos):
+        type = randrange(1, 4)
+        shape = BulletBoxShape(Vec3(0.3, 0.2, 0.7))
+        enemy = BulletRigidBodyNode("Enemy")
+        enemy.addShape(shape)
+        characterNP = render.attachNewNode(enemy)
+        characterNP.setPos(pos)
+        characterNP.setH(45)
+        characterNP.setCollideMask(BitMask32.allOn())
+        self.world.attachRigidBody(enemy)
+        if type is 1:
+            actorNP = Actor('models/Actors/lego/Shield/Shield.egg',
+                                 {
+                                     'fallbackGetup': 'models/Actors/lego/Shield/Shield-FallbackGetup.egg',
+                                     'fallforwardGetup': 'models/Actors/lego/Shield/Shield-FallforwardGetup.egg',
+                                     'jump': 'models/Actors/lego/Shield/Shield-jump.egg',
+                                     'punching': 'models/Actors/lego/Shield/Shield-punching.egg',
+                                     'walk': 'models/Actors/lego/Shield/Shield-walk.egg'
+                                 })
+        else:
+            actorNP = Actor('models/Actors/lego/SecurityGuard/SecurityGuard.egg',
+                  {
+                      'fallbackGetup': 'models/Actors/lego/SecurityGuard/SecurityGuard-fallbackGetup.egg',
+                      'fallforwardGetup': 'models/Actors/lego/SecurityGuard/SecurityGuard-fallforwardGetup.egg',
+                      'firegun': 'models/Actors/lego/SecurityGuard/SecurityGuard-firegun.egg',
+                      'jump': 'models/Actors/lego/SecurityGuard/SecurityGuard-jump.egg',
+                      'run': 'models/Actors/lego/SecurityGuard/SecurityGuard-run.egg',
+                             'swing': 'models/Actors/lego/SecurityGuard/SecurityGuard-swing.egg',
+                             'walk': 'models/Actors/lego/SecurityGuard/SecurityGuard-walk.egg',
+                             'SecurityGuard': 'models/Actors/lego/SecurityGuard/SecurityGuard.egg'
+                  })
+
+        actorNP.reparentTo(characterNP)
+        actorNP.setScale(0.3048)
+        actorNP.setH(180)
+        actorNP.setPos(0, 0, 0.4)
+
 
 
 myGame = GameBase()
