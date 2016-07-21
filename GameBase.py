@@ -145,6 +145,7 @@ class GameBase(ShowBase):
     def addPlayer(self):
         shape = BulletBoxShape(Vec3(0.3, 0.2, 0.7))
         self.character = BulletCharacterControllerNode(shape, 0.4, 'Player-1')
+        self.character.setIntoCollideMask(BitMask32.allOn())
         self.characterNP = self.render.attachNewNode(self.character)
         self.characterNP.setH(45)
         self.characterNP.setCollideMask(BitMask32.allOn())
@@ -170,21 +171,22 @@ class GameBase(ShowBase):
     def addTestEnemy(self):
         shape = BulletBoxShape(Vec3(0.3, 0.2, 0.7))
         self.testEnemy = BulletCharacterControllerNode(shape, 0.4, 'Enemy-1')
+        self.testEnemy.setIntoCollideMask(BitMask32.allOn())
         self.testEnemyNP = self.render.attachNewNode(self.testEnemy)
         self.testEnemyNP.setH(45)
         self.testEnemyNP.setCollideMask(BitMask32.allOn())
         self.world.attachCharacter(self.testEnemy)
         self.testActorNP = Actor('models/Actors/lego/Bricker/Bricker3.egg',
-                             {
-                                 'fallbackGetup': 'models/Actors/lego/Bricker/Bricker-FallbackGetup.egg',
-                                 'fallforwardGetup': 'models/Actors/lego/Bricker/Bricker-FallforwardGetup.egg',
-                                 'fireball': 'models/Actors/lego/Bricker/Bricker-fireball.egg',
-                                 'jump': 'models/Actors/lego/Bricker/Bricker-jump.egg',
-                                 'punching': 'models/Actors/lego/Bricker/Bricker-punching.egg',
-                                 'run': 'models/Actors/lego/Bricker/Bricker-run.egg',
-                                 'superpunch': 'models/Actors/lego/Bricker/Bricker-superpunch.egg',
-                                 'walk': 'models/Actors/lego/Bricker/Bricker-walk.egg'
-                             })
+                                 {
+                                     'fallbackGetup': 'models/Actors/lego/Bricker/Bricker-FallbackGetup.egg',
+                                     'fallforwardGetup': 'models/Actors/lego/Bricker/Bricker-FallforwardGetup.egg',
+                                     'fireball': 'models/Actors/lego/Bricker/Bricker-fireball.egg',
+                                     'jump': 'models/Actors/lego/Bricker/Bricker-jump.egg',
+                                     'punching': 'models/Actors/lego/Bricker/Bricker-punching.egg',
+                                     'run': 'models/Actors/lego/Bricker/Bricker-run.egg',
+                                     'superpunch': 'models/Actors/lego/Bricker/Bricker-superpunch.egg',
+                                     'walk': 'models/Actors/lego/Bricker/Bricker-walk.egg'
+                                 })
         self.testActorNP.reparentTo(self.testEnemyNP)
         self.testActorNP.setScale(0.3048)
         self.testActorNP.setH(180)
@@ -330,7 +332,7 @@ class GameBase(ShowBase):
         if self.level is 1:
             self.characterNP.setPos(LEVEL_1_POS)
             pos = LEVEL_1_POS
-            pos.setZ(pos.getZ()+1)
+            pos.setZ(pos.getZ() + 1)
             self.testEnemyNP.setPos(pos)
         else:
             self.characterNP.setPos(LEVEL_2_POS)
@@ -478,7 +480,6 @@ class GameBase(ShowBase):
         modelNP.setScale(size)
         self.world.attachRigidBody(stairNP.node())
 
-
     def addEnemy(self, pos):
         type = randrange(1, 4)
         shape = BulletBoxShape(Vec3(0.3, 0.2, 0.7))
@@ -491,31 +492,30 @@ class GameBase(ShowBase):
         self.world.attachRigidBody(enemy)
         if type is 1:
             actorNP = Actor('models/Actors/lego/Shield/Shield.egg',
-                                 {
-                                     'fallbackGetup': 'models/Actors/lego/Shield/Shield-FallbackGetup.egg',
-                                     'fallforwardGetup': 'models/Actors/lego/Shield/Shield-FallforwardGetup.egg',
-                                     'jump': 'models/Actors/lego/Shield/Shield-jump.egg',
-                                     'punching': 'models/Actors/lego/Shield/Shield-punching.egg',
-                                     'walk': 'models/Actors/lego/Shield/Shield-walk.egg'
-                                 })
+                            {
+                                'fallbackGetup': 'models/Actors/lego/Shield/Shield-FallbackGetup.egg',
+                                'fallforwardGetup': 'models/Actors/lego/Shield/Shield-FallforwardGetup.egg',
+                                'jump': 'models/Actors/lego/Shield/Shield-jump.egg',
+                                'punching': 'models/Actors/lego/Shield/Shield-punching.egg',
+                                'walk': 'models/Actors/lego/Shield/Shield-walk.egg'
+                            })
         else:
             actorNP = Actor('models/Actors/lego/SecurityGuard/SecurityGuard.egg',
-                  {
-                      'fallbackGetup': 'models/Actors/lego/SecurityGuard/SecurityGuard-fallbackGetup.egg',
-                      'fallforwardGetup': 'models/Actors/lego/SecurityGuard/SecurityGuard-fallforwardGetup.egg',
-                      'firegun': 'models/Actors/lego/SecurityGuard/SecurityGuard-firegun.egg',
-                      'jump': 'models/Actors/lego/SecurityGuard/SecurityGuard-jump.egg',
-                      'run': 'models/Actors/lego/SecurityGuard/SecurityGuard-run.egg',
-                             'swing': 'models/Actors/lego/SecurityGuard/SecurityGuard-swing.egg',
-                             'walk': 'models/Actors/lego/SecurityGuard/SecurityGuard-walk.egg',
-                             'SecurityGuard': 'models/Actors/lego/SecurityGuard/SecurityGuard.egg'
-                  })
+                            {
+                                'fallbackGetup': 'models/Actors/lego/SecurityGuard/SecurityGuard-fallbackGetup.egg',
+                                'fallforwardGetup': 'models/Actors/lego/SecurityGuard/SecurityGuard-fallforwardGetup.egg',
+                                'firegun': 'models/Actors/lego/SecurityGuard/SecurityGuard-firegun.egg',
+                                'jump': 'models/Actors/lego/SecurityGuard/SecurityGuard-jump.egg',
+                                'run': 'models/Actors/lego/SecurityGuard/SecurityGuard-run.egg',
+                                'swing': 'models/Actors/lego/SecurityGuard/SecurityGuard-swing.egg',
+                                'walk': 'models/Actors/lego/SecurityGuard/SecurityGuard-walk.egg',
+                                'SecurityGuard': 'models/Actors/lego/SecurityGuard/SecurityGuard.egg'
+                            })
 
         actorNP.reparentTo(characterNP)
         actorNP.setScale(0.3048)
         actorNP.setH(180)
         actorNP.setPos(0, 0, 0.4)
-
 
 
 myGame = GameBase()
