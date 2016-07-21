@@ -30,6 +30,7 @@ class GameBase(ShowBase):
         self.booosted = False
         self.currentLevel = 1
         self.springs = []
+        self.enemys = []
         self.l1 = DirectButton(text="Level - 1",
                                scale=0.05,
                                pos=(-0.2, .4, 0),
@@ -43,6 +44,16 @@ class GameBase(ShowBase):
         self.setupWorld()
         taskMgr.add(self.update, 'update')
         taskMgr.add(self.positionCamera, 'positionCamera')
+        taskMgr.add(self.enemyAttack, 'enemyAttack')
+
+    def enemyAttack(self, task):
+        for enemy in self.enemys:
+            vec = self.characterNP.getPos() - enemy.getPos()
+            length = vec.length()
+            if length < 10:
+                print length
+                enemy.node().applyCentralForce(vec)
+        return task.cont
 
     def update(self, task):
         self.processInputs()
@@ -133,6 +144,7 @@ class GameBase(ShowBase):
         self.setupControlKeys()
         self.addGround()
         self.addPlayer()
+        self.addEnemys()
 
     def addGround(self):
         shape = BulletPlaneShape(Vec3(0, 0, 1), 0)
@@ -165,30 +177,6 @@ class GameBase(ShowBase):
         self.actorNP.setH(180)
         self.actorNP.setPos(0, 0, 0.4)
         self.runningPose = False
-        self.addTestEnemy()
-
-    def addTestEnemy(self):
-        shape = BulletBoxShape(Vec3(0.3, 0.2, 0.7))
-        self.testEnemy = BulletCharacterControllerNode(shape, 0.4, 'Enemy-1')
-        self.testEnemyNP = self.render.attachNewNode(self.testEnemy)
-        self.testEnemyNP.setH(45)
-        self.testEnemyNP.setCollideMask(BitMask32.allOn())
-        self.world.attachCharacter(self.testEnemy)
-        self.testActorNP = Actor('models/Actors/lego/Bricker/Bricker3.egg',
-                             {
-                                 'fallbackGetup': 'models/Actors/lego/Bricker/Bricker-FallbackGetup.egg',
-                                 'fallforwardGetup': 'models/Actors/lego/Bricker/Bricker-FallforwardGetup.egg',
-                                 'fireball': 'models/Actors/lego/Bricker/Bricker-fireball.egg',
-                                 'jump': 'models/Actors/lego/Bricker/Bricker-jump.egg',
-                                 'punching': 'models/Actors/lego/Bricker/Bricker-punching.egg',
-                                 'run': 'models/Actors/lego/Bricker/Bricker-run.egg',
-                                 'superpunch': 'models/Actors/lego/Bricker/Bricker-superpunch.egg',
-                                 'walk': 'models/Actors/lego/Bricker/Bricker-walk.egg'
-                             })
-        self.testActorNP.reparentTo(self.testEnemyNP)
-        self.testActorNP.setScale(0.3048)
-        self.testActorNP.setH(180)
-        self.testActorNP.setPos(0, 0, 0.4)
 
     def setupLights(self):
         alight = AmbientLight('ambientLight')
@@ -329,9 +317,6 @@ class GameBase(ShowBase):
     def resetCharacterPosition(self):
         if self.level is 1:
             self.characterNP.setPos(LEVEL_1_POS)
-            pos = LEVEL_1_POS
-            pos.setZ(pos.getZ()+1)
-            self.testEnemyNP.setPos(pos)
         else:
             self.characterNP.setPos(LEVEL_2_POS)
         taskMgr.add(self.countDown, 'countDown')
@@ -366,13 +351,12 @@ class GameBase(ShowBase):
             self.addSpring(pos)
 
     def loadStages(self):
-        for stage in Stages:
+        for stage in STAGE_POS_LIST:
             self.addStage(boxSize=stage[0],
                           pos=stage[1],
                           name=stage[2],
                           modelPath=stage[3],
-                          heading=stage[4],
-                          numberOfEnemy=stage[5])
+                          heading=stage[4])
 
     def addWall(self, size, posX, posY):
         shape = BulletBoxShape(size)
@@ -418,7 +402,7 @@ class GameBase(ShowBase):
         objModel.reparentTo(objNP)
         self.world.attachRigidBody(objNP.node())
 
-    def addStage(self, boxSize, pos, name, modelPath, heading=0, numberOfEnemy=0):
+    def addStage(self, boxSize, pos, name, modelPath, heading=0):
         shape = BulletBoxShape(boxSize)
         objNP = self.render.attachNewNode(BulletRigidBodyNode(name))
         objNP.node().addShape(shape)
@@ -432,10 +416,6 @@ class GameBase(ShowBase):
         objModel.setPos(0, 0, boxSize.getZ() / -1)
         objModel.reparentTo(objNP)
         self.world.attachRigidBody(objNP.node())
-        if numberOfEnemy > 0:
-            for i in range(numberOfEnemy):
-                enemyPos = Vec3(pos.getX() + i, pos.getY(), pos.getZ())
-                self.addEnemy(pos)
 
     def addSpring(self, pos):
         print "add spring #{} at: {}".format(len(self.springs), pos)
@@ -478,44 +458,49 @@ class GameBase(ShowBase):
         modelNP.setScale(size)
         self.world.attachRigidBody(stairNP.node())
 
+    def addEnemys(self):
+        for pos in ENEMY_POS_LIST:
+            self.addEnemy(pos)
 
     def addEnemy(self, pos):
+        print "enemy pos: ", pos
         type = randrange(1, 4)
         shape = BulletBoxShape(Vec3(0.3, 0.2, 0.7))
-        enemy = BulletRigidBodyNode("Enemy")
+        enemy = BulletRigidBodyNode("Enemy" + str(len(self.enemys)))
+        enemy.setMass(0.3)
         enemy.addShape(shape)
         characterNP = render.attachNewNode(enemy)
         characterNP.setPos(pos)
         characterNP.setH(45)
         characterNP.setCollideMask(BitMask32.allOn())
+        self.enemys.append(characterNP)
         self.world.attachRigidBody(enemy)
         if type is 1:
             actorNP = Actor('models/Actors/lego/Shield/Shield.egg',
-                                 {
-                                     'fallbackGetup': 'models/Actors/lego/Shield/Shield-FallbackGetup.egg',
-                                     'fallforwardGetup': 'models/Actors/lego/Shield/Shield-FallforwardGetup.egg',
-                                     'jump': 'models/Actors/lego/Shield/Shield-jump.egg',
-                                     'punching': 'models/Actors/lego/Shield/Shield-punching.egg',
-                                     'walk': 'models/Actors/lego/Shield/Shield-walk.egg'
-                                 })
+                            {
+                                'fallbackGetup': 'models/Actors/lego/Shield/Shield-FallbackGetup.egg',
+                                'fallforwardGetup': 'models/Actors/lego/Shield/Shield-FallforwardGetup.egg',
+                                'jump': 'models/Actors/lego/Shield/Shield-jump.egg',
+                                'punching': 'models/Actors/lego/Shield/Shield-punching.egg',
+                                'walk': 'models/Actors/lego/Shield/Shield-walk.egg'
+                            })
         else:
             actorNP = Actor('models/Actors/lego/SecurityGuard/SecurityGuard.egg',
-                  {
-                      'fallbackGetup': 'models/Actors/lego/SecurityGuard/SecurityGuard-fallbackGetup.egg',
-                      'fallforwardGetup': 'models/Actors/lego/SecurityGuard/SecurityGuard-fallforwardGetup.egg',
-                      'firegun': 'models/Actors/lego/SecurityGuard/SecurityGuard-firegun.egg',
-                      'jump': 'models/Actors/lego/SecurityGuard/SecurityGuard-jump.egg',
-                      'run': 'models/Actors/lego/SecurityGuard/SecurityGuard-run.egg',
-                             'swing': 'models/Actors/lego/SecurityGuard/SecurityGuard-swing.egg',
-                             'walk': 'models/Actors/lego/SecurityGuard/SecurityGuard-walk.egg',
-                             'SecurityGuard': 'models/Actors/lego/SecurityGuard/SecurityGuard.egg'
-                  })
+                            {
+                                'fallbackGetup': 'models/Actors/lego/SecurityGuard/SecurityGuard-fallbackGetup.egg',
+                                'fallforwardGetup': 'models/Actors/lego/SecurityGuard/SecurityGuard-fallforwardGetup.egg',
+                                'firegun': 'models/Actors/lego/SecurityGuard/SecurityGuard-firegun.egg',
+                                'jump': 'models/Actors/lego/SecurityGuard/SecurityGuard-jump.egg',
+                                'run': 'models/Actors/lego/SecurityGuard/SecurityGuard-run.egg',
+                                'swing': 'models/Actors/lego/SecurityGuard/SecurityGuard-swing.egg',
+                                'walk': 'models/Actors/lego/SecurityGuard/SecurityGuard-walk.egg',
+                                'SecurityGuard': 'models/Actors/lego/SecurityGuard/SecurityGuard.egg'
+                            })
 
         actorNP.reparentTo(characterNP)
         actorNP.setScale(0.3048)
         actorNP.setH(180)
         actorNP.setPos(0, 0, 0.4)
-
 
 
 myGame = GameBase()
