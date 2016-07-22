@@ -35,6 +35,7 @@ class GameBase(ShowBase):
         self.enemyIsRunning = []
         self.enemyAttackPos = []
         self.pushed = False
+        # options:
         self.l1 = DirectButton(text="Level - 1",
                                scale=0.05,
                                pos=(-0.2, .4, 0),
@@ -43,7 +44,10 @@ class GameBase(ShowBase):
                                scale=0.05,
                                pos=(0.2, .4, 0),
                                command=self.startLevel2)
+        self.loadSounds()
 
+    # ==============        LOADIND FUNCTIONS       ===============
+    def loadSounds(self):
         # http://www.2gei.com/sound/
         self.completeLevelSound = base.loader.loadSfx(
             "sounds/completeLevel.mp3")
@@ -57,7 +61,35 @@ class GameBase(ShowBase):
         self.backgroundSound = base.loader.loadSfx("sounds/background.mp3")
         self.backgroundSound.setVolume(0.5)
         self.backgroundSound.setLoop(True)
-        # self.backgroundSound.play()
+        self.backgroundSound.play()
+
+    def loadMap(self):
+        self.blue_sky_sphere = self.loader.loadModel(
+            "models/blue_sky_sphere/blue_sky_sphere.egg")
+        self.blue_sky_sphere.reparentTo(self.render)
+        self.blue_sky_sphere.setScale(0.04, 0.04, 0.04)
+        self.blue_sky_sphere.setPos(0, 0, 0)
+
+        self.garden = self.loader.loadModel(
+            "models/garden/garden.egg")
+        self.garden.reparentTo(self.render)
+        self.garden.setScale(2, 2, 2)
+        self.garden.setPos(0, 0, 0)
+
+        self.addWall(Vec3(1, 90, 5), 80, 0)
+        self.addWall(Vec3(1, 90, 5), -80, 0)
+        self.addWall(Vec3(100, 1, 5), 0, 100)
+        self.addWall(Vec3(100, 1, 5), 0, -100)
+        for pos in SpringList:
+            self.addSpring(pos)
+
+    def loadStages(self):
+        for stage in STAGE_POS_LIST:
+            self.addStage(boxSize=stage[0],
+                          pos=stage[1],
+                          name=stage[2],
+                          modelPath=stage[3],
+                          heading=stage[4])
 
     def setupBase(self):
         self.setupWorld()
@@ -92,12 +124,6 @@ class GameBase(ShowBase):
                     self.pushSound.play()
                     self.enemyAttackPos[index] = True
                     taskMgr.add(self.resetAccackPose, 'resetAttackPose')
-
-                # print type(self.enemyActors[index])
-                # if distance > ENEMY_TURNING_RADIUS:
-                    # enemy.lookAt(self.characterNP.getPos())
-                # print "distance:", distance, " attackDist:",
-                # TYPE_1_ENEMY_ATTACK_DISTANCE
                 if distance > TYPE_1_ENEMY_ATTACK_DISTANCE and not self.enemyAttackPos[index]:
                     enemy.node().setLinearMovement(Vec3(0, ENEMY_MOVING_SPEED, 0), True)
                 else:
@@ -111,15 +137,11 @@ class GameBase(ShowBase):
                     self.enemyActors[index].pose('walk', 0)
                     self.enemyIsRunning[index] = False
                 enemy.node().setLinearMovement(Vec3(0, 0, 0), True)
-
         return task.cont
 
     def update(self, task):
         self.processInputs()
-        # do Physics process
-        dt = globalClock.getDt()
-        self.world.doPhysics(dt, 4, 1.0 / 240.0)
-        # print "Player Position: {}".format(self.characterNP.getPos())
+        self.world.doPhysics(globalClock.getDt(), 4, 1.0 / 240.0)
         return task.cont
 
     def processInputs(self):
@@ -397,34 +419,6 @@ class GameBase(ShowBase):
             print "Time over, Game Restart"
             self.resetCharacterPosition()
             return task.done
-
-    def loadMap(self):
-        self.blue_sky_sphere = self.loader.loadModel(
-            "models/blue_sky_sphere/blue_sky_sphere.egg")
-        self.blue_sky_sphere.reparentTo(self.render)
-        self.blue_sky_sphere.setScale(0.04, 0.04, 0.04)
-        self.blue_sky_sphere.setPos(0, 0, 0)
-
-        self.garden = self.loader.loadModel(
-            "models/garden/garden.egg")
-        self.garden.reparentTo(self.render)
-        self.garden.setScale(2, 2, 2)
-        self.garden.setPos(0, 0, 0)
-
-        self.addWall(Vec3(1, 90, 5), 80, 0)
-        self.addWall(Vec3(1, 90, 5), -80, 0)
-        self.addWall(Vec3(100, 1, 5), 0, 100)
-        self.addWall(Vec3(100, 1, 5), 0, -100)
-        for pos in SpringList:
-            self.addSpring(pos)
-
-    def loadStages(self):
-        for stage in STAGE_POS_LIST:
-            self.addStage(boxSize=stage[0],
-                          pos=stage[1],
-                          name=stage[2],
-                          modelPath=stage[3],
-                          heading=stage[4])
 
     def addWall(self, size, posX, posY):
         shape = BulletBoxShape(size)
