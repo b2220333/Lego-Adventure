@@ -37,7 +37,7 @@ SpringList = [Vec3(-12, -25, 12.5),
               Vec3(5, 10, 17),
               Vec3(40, 62, 20)]
 
-TIME_LIMIT = 6000
+TIME_LIMIT = 60
 BOOSTED = False
 JUMP_HEIGHT = 8
 JUMP_SPEED = 10

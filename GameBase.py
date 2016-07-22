@@ -57,7 +57,7 @@ class GameBase(ShowBase):
         self.backgroundSound = base.loader.loadSfx("sounds/background.mp3")
         self.backgroundSound.setVolume(0.5)
         self.backgroundSound.setLoop(True)
-        self.backgroundSound.play()
+        # self.backgroundSound.play()
 
     def setupBase(self):
         self.setupWorld()
@@ -457,33 +457,50 @@ class GameBase(ShowBase):
         self.world.attachRigidBody(wallNP.node())
 
     def addSimpleBox(self, boxSize, pos, scale, heading, name, modelPath, shift=Vec3(0, 0, 0)):
+        # create shape
         shape = BulletBoxShape(boxSize)
+        # create node and attatch to render
         objNP = self.render.attachNewNode(BulletRigidBodyNode(name))
         objNP.node().addShape(shape)
         objNP.setPos(pos.getX(), pos.getY(), pos.getZ() + boxSize.getZ())
         objNP.setCollideMask(BitMask32.allOn())
+        self.world.attachRigidBody(objNP.node())
+        # load model
         objModel = self.loader.loadModel(modelPath)
-        objModel.setScale(scale.getX(), scale.getY(), scale.getZ())
+        # attach to objectNodePath
+        objModel.reparentTo(objNP)
         objModel.setPos(shift.getX(), shift.getY(),
                         shift.getZ() - boxSize.getZ())
-        objModel.setH(heading)
-        objModel.reparentTo(objNP)
-        self.world.attachRigidBody(objNP.node())
+        objModel.setScale(scale.getX(), scale.getY(), scale.getZ())
 
     def addStage(self, boxSize, pos, name, modelPath, heading=0):
-        shape = BulletBoxShape(boxSize)
+        # create a BodyNode and attach to render become a NodePath
         objNP = self.render.attachNewNode(BulletRigidBodyNode(name))
+        # attach the BodyNode inside the NodePath to physics world
+        self.world.attachRigidBody(objNP.node())
+
+        # set the properties of the NodePath
+        #   - shape
+        shape = BulletBoxShape(boxSize)
         objNP.node().addShape(shape)
+        #   - position
         objNP.setPos(pos.getX(), pos.getY(), pos.getZ())
-        objNP.setH(heading)
+        #   - collideMask
         objNP.setCollideMask(BitMask32.allOn())
+        #   - model
         objModel = self.loader.loadModel(modelPath)
-        objModel.setScale(2 * boxSize.getX(),
-                          2 * boxSize.getY(),
-                          2 * boxSize.getZ())
+        objModel.setScale(boxSize.getX() * 2, boxSize.getY()
+                          * 2, boxSize.getZ() * 2)
         objModel.setPos(0, 0, boxSize.getZ() / -1)
         objModel.reparentTo(objNP)
-        self.world.attachRigidBody(objNP.node())
+        #   - texture
+        ts = TextureStage.getDefault()
+        texture = objModel.getTexture()
+        objModel.setTexOffset(ts, -0.5, -0.5)
+        objModel.setTexScale(ts,
+                             boxSize.getX() / 2.0,
+                             boxSize.getY() / 2.0,
+                             boxSize.getZ() / 2.0)
 
     def addSpring(self, pos):
         print "add spring #{} at: {}".format(len(self.springs), pos)
