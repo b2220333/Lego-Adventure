@@ -13,10 +13,14 @@ class MapWithCharacters(GameMap):
         self.inTheAir = False
         self.booosted = False
         self.currentLevel = 1
-        self.enemys = []
-        self.enemyActors = []
-        self.enemyIsRunning = []
-        self.enemyAttackPos = []
+        self.type_1_enemys = []
+        self.type_1_enemy_actors = []
+        self.type_1_enemy_is_running = []
+        self.type_1_enemy_is_attacking_pose = []
+        self.type_2_enemys = []
+        self.type_2_enemy_actors = []
+        self.type_2_enemy_is_running = []
+        self.type_2_enemy_is_attacking_pose = []
         self.pushed = False
         self.addSounds()
 
@@ -50,35 +54,52 @@ class MapWithCharacters(GameMap):
         self.runningPose = False
 
     def addEnemys(self):
-        for pos in TYPE_1_ENEMY_POS_LIST:
+        def addEnemy(type, pos):
             shape = BulletBoxShape(Vec3(0.3, 0.2, 0.7))
             enemyNode = BulletCharacterControllerNode(
-                shape, 0.4, 'Enemy' + str(len(self.enemys)))
+                shape, 0.4, 'Type_{}_Enemy{}'.format(type, len(self.type_1_enemys)))
+            self.world.attachCharacter(enemyNode)
             enemyNode.setIntoCollideMask(BitMask32.allOn())
             enemyNP = self.render.attachNewNode(enemyNode)
-            enemyNP.setH(45)
             enemyNP.setCollideMask(BitMask32.allOn())
             enemyNP.setPos(pos)
-            self.enemys.append(enemyNP)
-            self.world.attachCharacter(enemyNode)
-
-            actor = Actor('models/Actors/lego/SecurityGuard/SecurityGuard.egg',
-                          {
-                              'fallbackGetup': 'models/Actors/lego/SecurityGuard/SecurityGuard-fallbackGetup.egg',
-                              'fallforwardGetup': 'models/Actors/lego/SecurityGuard/SecurityGuard-fallforwardGetup.egg',
-                              'firegun': 'models/Actors/lego/SecurityGuard/SecurityGuard-firegun.egg',
-                              'jump': 'models/Actors/lego/SecurityGuard/SecurityGuard-jump.egg',
-                              'run': 'models/Actors/lego/SecurityGuard/SecurityGuard-run.egg',
-                              'swing': 'models/Actors/lego/SecurityGuard/SecurityGuard-swing.egg',
-                              'walk': 'models/Actors/lego/SecurityGuard/SecurityGuard-walk.egg'
-                          })
+            if type is 1:
+                self.type_1_enemys.append(enemyNP)
+                actor = Actor('models/Actors/lego/Shield/Shield.egg',
+                              {
+                                  'FallbackGetup': 'models/Actors/lego/Shield/Shield-FallbackGetup.egg',
+                                  'FallforwardGetup': 'models/Actors/lego/Shield/Shield-FallforwardGetup.egg',
+                                  'jump': 'models/Actors/lego/Shield/Shield-jump.egg',
+                                  'punch': 'models/Actors/lego/Shield/Shield-punch.egg',
+                                  'walk': 'models/Actors/lego/Shield/Shield-walk.egg'
+                              })
+                self.type_1_enemy_actors.append(actor)
+                self.type_1_enemy_is_running.append(False)
+                self.type_1_enemy_is_attacking_pose.append(False)
+            else:
+                self.type_2_enemys.append(enemyNP)
+                actor = Actor('models/Actors/lego/SecurityGuard/SecurityGuard.egg',
+                              {
+                                  'fallbackGetup': 'models/Actors/lego/SecurityGuard/SecurityGuard-fallbackGetup.egg',
+                                  'fallforwardGetup': 'models/Actors/lego/SecurityGuard/SecurityGuard-fallforwardGetup.egg',
+                                  'firegun': 'models/Actors/lego/SecurityGuard/SecurityGuard-firegun.egg',
+                                  'jump': 'models/Actors/lego/SecurityGuard/SecurityGuard-jump.egg',
+                                  'run': 'models/Actors/lego/SecurityGuard/SecurityGuard-run.egg',
+                                  'swing': 'models/Actors/lego/SecurityGuard/SecurityGuard-swing.egg',
+                                  'walk': 'models/Actors/lego/SecurityGuard/SecurityGuard-walk.egg'
+                              })
+                self.type_2_enemy_actors.append(actor)
+                self.type_2_enemy_is_running.append(False)
+                self.type_2_enemy_is_attacking_pose.append(False)
             actor.reparentTo(enemyNP)
             actor.setScale(0.3048)
             actor.setH(180)
             actor.setPos(0, 0, 0.4)
-            self.enemyActors.append(actor)
-            self.enemyIsRunning.append(False)
-            self.enemyAttackPos.append(False)
+
+        for pos in TYPE_1_ENEMY_POS_LIST:
+            addEnemy(1, pos)
+        for pos in TYPE_2_ENEMY_POS_LIST:
+            addEnemy(2, pos)
 
     def addSounds(self):
         # http://www.2gei.com/sound/

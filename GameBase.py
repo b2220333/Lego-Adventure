@@ -1,6 +1,7 @@
 from direct.gui.DirectGui import *
 from direct.showbase.InputStateGlobal import inputState
 from MapWithCharacters import MapWithCharacters
+from panda3d.bullet import BulletWorld, BulletPlaneShape, BulletRigidBodyNode, BulletSphereShape
 from panda3d.core import *
 from Settings import *
 import sys
@@ -11,6 +12,8 @@ class GameBase(MapWithCharacters):
         MapWithCharacters.__init__(self)
         self.cameraHeight = 5
         self.chooseLevel()
+        self.sphereNodes = []
+        self.health = HEALTH_LIMIT
 
 # ======================================================
 # =======       GAME FLOW CONTROL FUNCTIONS     ========
@@ -49,15 +52,22 @@ class GameBase(MapWithCharacters):
         self.timeBar = DirectWaitBar(text="Time",
                                      value=0,
                                      range=TIME_LIMIT,
-                                     pos=(0, .4, .9),
-                                     scale=(1, 0.5, 0.2))
+                                     pos=(0, .4, .95),
+                                     scale=(1, 1, 0.45))
+        self.healthBar = DirectWaitBar(text="health",
+                                       value=HEALTH_LIMIT,
+                                       range=HEALTH_LIMIT,
+                                       pos=(0, 0.4, 0.85),
+                                       scale=(1, 1, 0.45))
 
     def addTasks(self):
         taskMgr.add(self.physicsUpdateTask, 'physicsUpdateTask')
         taskMgr.add(self.inputProcessTask, 'inputProcessTask')
         taskMgr.add(self.cameraPositionTask, 'cameraPositionTask')
-        taskMgr.add(self.enemyAttackTask, 'enemyAttackTask')
+        taskMgr.add(self.type_1_enemy_attack_task, 'type_1_enemy_attack_task')
+        taskMgr.add(self.type_2_enemy_attack_task, 'type_2_enemy_attack_task')
         taskMgr.add(self.collectableCheckTask, "collectableCheckTask")
+        taskMgr.add(self.hitCheckTask, "hitCheckTask")
         taskMgr.add(self.playerPositionCheckTask, "playerPositionCheckTask")
 
     def setupControls(self):
@@ -86,8 +96,11 @@ class GameBase(MapWithCharacters):
     def placePlayer(self):
         if self.level is 1:
             self.characterNP.setPos(LEVEL_1_POS)
+            self.characterNP.lookAt(Vec3(0, 0, 0))
+            self.health = HEALTH_LIMIT
         else:
             self.characterNP.setPos(LEVEL_2_POS)
+            self.characterNP.lookAt(Vec3(0, 0, 0))
         taskMgr.add(self.countDownTask, 'countDownTask')
 
 # ==============================================================
@@ -103,7 +116,7 @@ class GameBase(MapWithCharacters):
             return task.done
 
     def updateBoostBarTask(self, task):
-        if task.time < BOOST_TIME:
+        if self.booosted and task.time < BOOST_TIME:
             self.boostBar["value"] = task.time
             return task.cont
         else:
@@ -116,6 +129,17 @@ class GameBase(MapWithCharacters):
         else:
             self.inTheAir = False
             return task.done
+
+    def hitCheckTask(self, task):
+        for ball in self.sphereNodes:
+            contactResult = self.world.contactTestPair(
+                self.character, ball)
+            if len(contactResult.getContacts()) > 0:
+                # self.pickupSpringSound.play()
+                print "hit"
+                self.health -= 1
+                self.healthBar['value'] = self.health
+        return task.cont
 
     def collectableCheckTask(self, task):
         for spring in self.springs:
@@ -132,7 +156,7 @@ class GameBase(MapWithCharacters):
                     self.boostBar = DirectWaitBar(text="Boost",
                                                   value=5,
                                                   range=BOOST_TIME,
-                                                  pos=(0, 1, 0.8),
+                                                  pos=(0, 1, 0.75),
                                                   scale=(0.5, 0.5, 0.2))
                     taskMgr.add(self.updateBoostBarTask, 'updateBoostBarTask')
         return task.cont
@@ -173,37 +197,83 @@ class GameBase(MapWithCharacters):
         base.camera.lookAt(position)
         return task.cont
 
-    def enemyAttackTask(self, task):
-        for index, enemy in enumerate(self.enemys):
+    def type_1_enemy_attack_task(self, task):
+        for index, enemy in enumerate(self.type_1_enemys):
             target = self.characterNP.getPos()
             target.setZ(enemy.getZ())
             enemy.lookAt(target)
             vec = self.characterNP.getPos() - enemy.getPos()
             distance = vec.length()
             heightDelta = vec.getZ()
-            if (distance < ATTACK_RAIUS) and (abs(heightDelta) < 0.1):
-                if not self.enemyIsRunning[index]:
-                    self.enemyActors[index].loop('run')
-                    self.enemyIsRunning[index] = True
+            if (distance < TYPE_1_ENEMY_ATTACK_RAIUS) and (abs(heightDelta) < 0.1):
+                if not self.type_1_enemy_is_running[index]:
+                    self.type_1_enemy_actors[index].loop('walk')
+                    self.type_1_enemy_is_running[index] = True
 
-                if not self.enemyAttackPos[index] and distance < TYPE_1_ENEMY_ATTACK_DISTANCE:
-                    self.enemyActors[index].play('swing')
+                if not self.type_1_enemy_is_attacking_pose[index] and distance < TYPE_1_ENEMY_ATTACK_DISTANCE:
+                    self.type_1_enemy_actors[index].play('punch')
                     self.pushSound.play()
-                    self.enemyAttackPos[index] = True
+                    self.type_1_enemy_is_attacking_pose[index] = True
                     taskMgr.add(self.resetPoseTask, 'resetAttackPose')
-                if distance > TYPE_1_ENEMY_ATTACK_DISTANCE and not self.enemyAttackPos[index]:
-                    enemy.node().setLinearMovement(Vec3(0, ENEMY_MOVING_SPEED, 0), True)
+                if distance > TYPE_1_ENEMY_ATTACK_DISTANCE and not self.type_1_enemy_is_attacking_pose[index]:
+                    enemy.node().setLinearMovement(Vec3(0, TYPE_1_ENEMY_MOVING_SPEED, 0), True)
                 else:
                     enemy.node().setLinearMovement(Vec3(0, 0, 0), True)
                     self.pushed = True
                     self.pushedDirection = vec
                 vec.normalize()
             else:
-                if self.enemyIsRunning[index]:
-                    self.enemyActors[index].stop()
-                    self.enemyActors[index].pose('walk', 0)
-                    self.enemyIsRunning[index] = False
+                if self.type_1_enemy_is_running[index]:
+                    self.type_1_enemy_actors[index].stop()
+                    self.type_1_enemy_actors[index].pose('walk', 0)
+                    self.type_1_enemy_is_running[index] = False
                 enemy.node().setLinearMovement(Vec3(0, 0, 0), True)
+        return task.cont
+
+    def type_2_enemy_attack_task(self, task):
+        if (task.time % 0.2) < 0.01:
+            for index, enemy in enumerate(self.type_2_enemys):
+                heading = enemy.getH()
+                enemy.lookAt(self.characterNP.getPos())
+                if abs(heading - enemy.getH()) > 0.1:
+                    if not self.type_2_enemy_is_running[index]:
+                        self.type_2_enemy_actors[index].loop('walk')
+                    self.type_2_enemy_is_running[index] = True
+                else:
+                    if self.type_2_enemy_is_running[index]:
+                        self.type_2_enemy_actors[index].stop()
+                        self.type_2_enemy_actors[index].pose('walk', 0)
+                        self.type_2_enemy_is_running[index] = False
+
+        if (task.time % 2) < 0.01:
+            # clean up old balls
+            for ball in self.sphereNodes:
+                ball.removeAllChildren()
+                self.world.removeRigidBody(ball)
+            # for every enemy
+            for index, enemy in enumerate(self.type_2_enemys):
+                target = self.characterNP.getPos()
+                vec = self.characterNP.getPos() - enemy.getPos()
+                distance = vec.length()
+                if distance < TYPE_2_ENEMY_ATTACK_RAIUS:
+                    self.type_2_enemy_actors[index].play('swing')
+                    # throw new ball
+                    pos = enemy.getPos()
+                    shooting_direction = self.characterNP.getPos() - pos
+                    shooting_direction.normalize()
+                    print "shotting at: ", shooting_direction
+                    sphereNode = BulletRigidBodyNode('Ball')
+                    sphereNode.setMass(1.0)
+                    sphereNode.addShape(BulletSphereShape(0.2))
+                    sphere = self.render.attachNewNode(sphereNode)
+                    pos.setZ(pos.getZ() + 1)
+                    sphere.setPos(pos)
+                    smileyFace = self.loader.loadModel("models/smiley")
+                    smileyFace.setScale(0.2)
+                    smileyFace.reparentTo(sphere)
+                    self.world.attachRigidBody(sphereNode)
+                    sphereNode.applyCentralForce(shooting_direction * 1000)
+                    self.sphereNodes.append(sphereNode)
         return task.cont
 
     def physicsUpdateTask(self, task):
@@ -214,9 +284,9 @@ class GameBase(MapWithCharacters):
         if task.time < 1:
             return task.cont
         else:
-            for index in range(len(self.enemyAttackPos)):
-                self.enemyAttackPos[index] = False
-                self.enemyIsRunning[index] = False
+            for index in range(len(self.type_1_enemy_is_attacking_pose)):
+                self.type_1_enemy_is_attacking_pose[index] = False
+                self.type_1_enemy_is_running[index] = False
             return task.done
 
     def inputProcessTask(self, task):
