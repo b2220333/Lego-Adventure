@@ -1,26 +1,35 @@
 from panda3d.core import Vec3
-from direct.actor.Actor import Actor
 from panda3d.core import *
 
-HEALTH_LIMIT = 500
 BOOST_TIME = 10
 ENEMY_TURNING_RADIUS = 0.75
+HEALTH_LIMIT = 500
 JUMP_HEIGHT = 8
 JUMP_SPEED = 10
 LEVEL_1_POS = Vec3(-65, -65, 10)
 LEVEL_2_POS = Vec3(-6, -9, 16.5)
-LEVEL_3_POS = Vec3(-70, 70, 25)
+LEVEL_3_POS = Vec3(72, -75, 23)
 PLAYER_SPEED = 3
-TIME_LIMIT = 60
-TYPE_1_ENEMY_MOVING_SPEED = 0.3
+TIME_LIMIT = 90
 TYPE_1_ENEMY_ATTACK_DISTANCE = 1
-TYPE_1_ENEMY_PUSH_DISTANCE = -1
 TYPE_1_ENEMY_ATTACK_RAIUS = 7
+TYPE_1_ENEMY_MOVING_SPEED = 0.3
+TYPE_1_ENEMY_PUSH_DISTANCE = -1
 TYPE_2_ENEMY_ATTACK_RAIUS = 20
-TYPE_1_ENEMY_POS_LIST = [Vec3(-20.67, -36.52, 11.86),
-                         Vec3(-0.269259, 2.59712, 16.36)]
 
-TYPE_2_ENEMY_POS_LIST = [Vec3(-66, -66, 10)]
+
+TYPE_1_ENEMY_POS_LIST = [Vec3(-20.4551, -32.5579, 12),
+                         Vec3(-0.269259, 2.59712, 16.36),
+                         Vec3(29.4766, 42.2148, 19.86),
+                         Vec3(39.9572, 71.1687, 21)]
+
+TYPE_2_ENEMY_POS_LIST = [Vec3(-16.296, -54.2117, 11),
+                         Vec3(-11.2137, -5.56247, 15),
+                         Vec3(16.9461, 31.4267, 19),
+                         Vec3(34.8673, 41.6622, 21),
+                         Vec3(34.7589, 51.4396, 20.86),
+                         Vec3(56.4356, 59.0785, 22),
+                         Vec3(61.7531, 80.0794, 23)]
 
 SPRING_LIST = [Vec3(-12, -25, 12.5),
                Vec3(5, 10, 17),
@@ -35,9 +44,14 @@ STAGE_POS_LIST = [(Vec3(15, 15, 0.2), Vec3(-63, -63, 9), "stage1"),
                   (Vec3(2, 15, 0.2), Vec3(-0, 10, 15.5), "stage6"),
                   (Vec3(2, 2, 0.2), Vec3(5, 10, 17), "stage7"),
                   (Vec3(1.0, 12, 0.2), Vec3(17, 22, 18), "stage8"),
-                  (Vec3(0.85, 12, 0.2), Vec3(29, 41, 19), "stage9"),
-                  (Vec3(0.7, 12, 0.2), Vec3(40, 62, 20), "stage10"),
-                  (Vec3(0.55, 12, 0.2), Vec3(52, 80, 21), "stage11"),
-                  (Vec3(0.40, 12, 0.2), Vec3(62, 80, 22), "stage12"),
-                  (Vec3(0.40, 80, 0.2), Vec3(72, 00, 23), "stage13"),
-                  (Vec3(0.40, 100, 0.2), Vec3(0, 0, 24), "stage14")]
+                  (Vec3(1.0, 1.0, 0.2), Vec3(23, 28, 18.5), "stage9"),
+                  (Vec3(0.85, 12, 0.2), Vec3(29, 41, 19), "stage10"),
+                  (Vec3(0.85, 12, 0.2), Vec3(35, 51, 20), "stage11"),
+                  (Vec3(0.7, 12, 0.2), Vec3(40, 62, 20), "stage12"),
+                  (Vec3(0.7, 12, 0.2), Vec3(45, 70, 20), "stage13"),
+                  (Vec3(0.55, 12, 0.2), Vec3(49, 75, 21), "stage14"),
+                  (Vec3(5.5, 12, 0.2), Vec3(60, 70, 21), "stage15"),
+                  (Vec3(1.40, 12, 0.2), Vec3(67, 75, 22), "stage16"),
+                  (Vec3(0.40, 12, 0.2), Vec3(62, 80, 22), "stage17"),
+                  (Vec3(3.40, 80, 0.2), Vec3(72, 00, 23), "stage18"),
+                  (Vec3(0.40, 100, 0.2), Vec3(0, 0, 24), "stage19")]

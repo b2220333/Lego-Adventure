@@ -68,7 +68,7 @@ class GameBase(MapWithCharacters):
         taskMgr.add(self.type_2_enemy_attack_task, 'type_2_enemy_attack_task')
         taskMgr.add(self.collectableCheckTask, "collectableCheckTask")
         taskMgr.add(self.hitCheckTask, "hitCheckTask")
-        taskMgr.add(self.playerPositionCheckTask, "playerPositionCheckTask")
+        taskMgr.add(self.playerStatusCheckTask, "playerStatusCheckTask")
 
     def setupControls(self):
         def Exit():
@@ -135,10 +135,9 @@ class GameBase(MapWithCharacters):
             contactResult = self.world.contactTestPair(
                 self.character, ball)
             if len(contactResult.getContacts()) > 0:
-                # self.pickupSpringSound.play()
-                print "hit"
                 self.health -= 1
                 self.healthBar['value'] = self.health
+                self.hitSound.play()
         return task.cont
 
     def collectableCheckTask(self, task):
@@ -168,9 +167,9 @@ class GameBase(MapWithCharacters):
             self.booosted = False
             return task.done
 
-    def playerPositionCheckTask(self, task):
+    def playerStatusCheckTask(self, task):
         height = self.characterNP.getZ()
-        if height < 5:
+        if height < 5 or self.health < 0:
             print "player deaded"
             self.deadthSound.play()
             self.booosted = False
@@ -235,7 +234,7 @@ class GameBase(MapWithCharacters):
             for index, enemy in enumerate(self.type_2_enemys):
                 heading = enemy.getH()
                 enemy.lookAt(self.characterNP.getPos())
-                if abs(heading - enemy.getH()) > 0.1:
+                if abs(heading - enemy.getH()) > 1:
                     if not self.type_2_enemy_is_running[index]:
                         self.type_2_enemy_actors[index].loop('walk')
                     self.type_2_enemy_is_running[index] = True
@@ -277,6 +276,9 @@ class GameBase(MapWithCharacters):
         return task.cont
 
     def physicsUpdateTask(self, task):
+        if task.time % 1 < 0.01:
+            print self.characterNP.getPos()
+
         self.world.doPhysics(globalClock.getDt(), 4, 1.0 / 240.0)
         return task.cont
 
