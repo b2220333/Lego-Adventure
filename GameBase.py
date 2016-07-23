@@ -277,7 +277,7 @@ class GameBase(MapWithCharacters):
         if self.pushed:
             movingDirection.setY(TYPE_1_ENEMY_PUSH_DISTANCE)
             self.pushed = False
-        self.character.setLinearMovement(movingDirection * MOVING_SPEED, True)
+        self.character.setLinearMovement(movingDirection, True)
         self.character.setAngularMovement(turningAngle)
         return task.cont
 
