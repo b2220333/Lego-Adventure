@@ -1,112 +1,179 @@
-# LIHAO LIN Created on 07/08/2016 All right reserved
-from direct.actor.Actor import Actor
 from direct.gui.DirectGui import *
 from direct.showbase.InputStateGlobal import inputState
-from direct.showbase.ShowBase import ShowBase
-from panda3d.bullet import BulletBoxShape
-from panda3d.bullet import BulletCharacterControllerNode
-from panda3d.bullet import BulletDebugNode
-from panda3d.bullet import BulletGhostNode
-from panda3d.bullet import BulletPlaneShape
-from panda3d.bullet import BulletRigidBodyNode
-from panda3d.bullet import BulletSphereShape
-from panda3d.bullet import BulletWorld
+from MapWithCharacters import MapWithCharacters
 from panda3d.core import *
-from panda3d.core import AmbientLight, DirectionalLight
-from panda3d.core import BitMask32
-from panda3d.core import NodePath, PandaNode
-from panda3d.core import Vec3, Vec4
-from random import randrange
 from Settings import *
 import sys
 
 
-class GameBase(ShowBase):
+class GameBase(MapWithCharacters):
     def __init__(self):
-        ShowBase.__init__(self)
-        self.jumpHeight = 5
-        self.inTheAir = False
+        MapWithCharacters.__init__(self)
         self.cameraHeight = 5
-        self.booosted = False
-        self.currentLevel = 1
-        self.springs = []
-        self.enemys = []
-        self.enemyActors = []
-        self.enemyIsRunning = []
-        self.enemyAttackPos = []
-        self.pushed = False
-        # options:
+        self.chooseLevel()
+
+# ======================================================
+# =======       GAME FLOW CONTROL FUNCTIONS     ========
+    def chooseLevel(self):
+        def startLevel1():
+            self.level = 1
+            self.startGame()
+
+        def startLevel2():
+            self.level = 2
+            self.startGame()
+
         self.l1 = DirectButton(text="Level - 1",
                                scale=0.05,
                                pos=(-0.2, .4, 0),
-                               command=self.startLevel1)
+                               command=startLevel1)
         self.l2 = DirectButton(text="Level - 2",
                                scale=0.05,
                                pos=(0.2, .4, 0),
-                               command=self.startLevel2)
-        self.loadSounds()
+                               command=startLevel2)
 
-    # ==============        LOADIND FUNCTIONS       ===============
-    def loadSounds(self):
-        # http://www.2gei.com/sound/
-        self.completeLevelSound = base.loader.loadSfx(
-            "sounds/completeLevel.mp3")
-        self.deadthSound = base.loader.loadSfx("sounds/dead.wav")
-        # self.completeLevelSound.setVolume(5)
-        # self.completeLevelSound.play()
-        self.pushSound = base.loader.loadSfx("sounds/push.wav")
-        self.jumpSound = base.loader.loadSfx("sounds/Jump.wav")
-        self.pickupSpringSound = base.loader.loadSfx(
-            "sounds/Pickup_Spring.wav")
-        self.backgroundSound = base.loader.loadSfx("sounds/background.mp3")
-        self.backgroundSound.setVolume(0.5)
-        self.backgroundSound.setLoop(True)
-        self.backgroundSound.play()
+    def startGame(self):
+        # remove the menu
+        self.l1.destroy()
+        self.l2.destroy()
+        # add game tasks
+        self.addTasks()
+        # setup map for game
+        self.setupMap()
+        # setup controlls
+        self.setupControls()
+        # setup chatacters
+        self.setupCharacters()
+        self.placePlayer()
+        # add countdown timebar
+        self.timeBar = DirectWaitBar(text="Time",
+                                     value=0,
+                                     range=TIME_LIMIT,
+                                     pos=(0, .4, .9),
+                                     scale=(1, 0.5, 0.2))
 
-    def loadMap(self):
-        self.blue_sky_sphere = self.loader.loadModel(
-            "models/blue_sky_sphere/blue_sky_sphere.egg")
-        self.blue_sky_sphere.reparentTo(self.render)
-        self.blue_sky_sphere.setScale(0.04, 0.04, 0.04)
-        self.blue_sky_sphere.setPos(0, 0, 0)
+    def addTasks(self):
+        taskMgr.add(self.physicsUpdateTask, 'physicsUpdateTask')
+        taskMgr.add(self.inputProcessTask, 'inputProcessTask')
+        taskMgr.add(self.cameraPositionTask, 'cameraPositionTask')
+        taskMgr.add(self.enemyAttackTask, 'enemyAttackTask')
+        taskMgr.add(self.collectableCheckTask, "collectableCheckTask")
+        taskMgr.add(self.playerPositionCheckTask, "playerPositionCheckTask")
 
-        self.garden = self.loader.loadModel(
-            "models/garden/garden.egg")
-        self.garden.reparentTo(self.render)
-        self.garden.setScale(2, 2, 2)
-        self.garden.setPos(0, 0, 0)
+    def setupControls(self):
+        def Exit():
+            sys.exit(1)
 
-        self.addWall(Vec3(1, 90, 5), 80, 0)
-        self.addWall(Vec3(1, 90, 5), -80, 0)
-        self.addWall(Vec3(100, 1, 5), 0, 100)
-        self.addWall(Vec3(100, 1, 5), 0, -100)
-        for pos in SpringList:
-            self.addSpring(pos)
+        def Debug():
+            print "Debug Mode Toggled"
+            if self.debugNP.isHidden():
+                self.debugNP.show()
+            else:
+                self.debugNP.hide()
 
-    def loadStages(self):
-        for stage in STAGE_POS_LIST:
-            self.addStage(boxSize=stage[0],
-                          pos=stage[1],
-                          name=stage[2],
-                          modelPath=stage[3],
-                          heading=stage[4])
+        base.disableMouse()
+        self.accept('escape', Exit)
+        self.accept('t', Debug)
+        inputState.watchWithModifiers('forward', 'w')
+        inputState.watchWithModifiers('reverse', 's')
+        inputState.watchWithModifiers('turnLeft', 'a')
+        inputState.watchWithModifiers('turnRight', 'd')
+        inputState.watchWithModifiers('jump', 'space')
+        inputState.watchWithModifiers('cameraHigher', 'q')
+        inputState.watchWithModifiers('cameraLower', 'e')
+        print "Done Setup Control"
 
-    def setupBase(self):
-        self.setupWorld()
-        taskMgr.add(self.update, 'update')
-        taskMgr.add(self.positionCamera, 'positionCamera')
-        taskMgr.add(self.enemyAttack, 'enemyAttack')
+    def placePlayer(self):
+        if self.level is 1:
+            self.characterNP.setPos(LEVEL_1_POS)
+        else:
+            self.characterNP.setPos(LEVEL_2_POS)
+        taskMgr.add(self.countDownTask, 'countDownTask')
 
-    def resetAccackPose(self, task):
-        if task.time < 1:
+# ==============================================================
+# =======       TASKS FOR RUNNING THE GAME        ============
+
+    def countDownTask(self, task):
+        if task.time < TIME_LIMIT:
+            self.timeBar['value'] = task.time
             return task.cont
         else:
-            for index in range(len(self.enemyAttackPos)):
-                self.enemyAttackPos[index] = False
-                self.enemyIsRunning[index] = False
+            print "Time over, Game Restart"
+            self.placePlayer()
             return task.done
 
-    def enemyAttack(self, task):
+    def updateBoostBarTask(self, task):
+        if task.time < BOOST_TIME:
+            self.boostBar["value"] = task.time
+            return task.cont
+        else:
+            self.boostBar.destroy()
+            return task.done
+
+    def resetCharacterStatusTask(self, task):
+        if task.time < 1.2:
+            return task.cont
+        else:
+            self.inTheAir = False
+            return task.done
+
+    def collectableCheckTask(self, task):
+        for spring in self.springs:
+            contactResult = self.world.contactTestPair(
+                self.character, spring.node())
+            if len(contactResult.getContacts()) > 0:
+                self.pickupSpringSound.play()
+                # print "Sphere is in contact with: ", spring.getName()
+                spring.node().removeAllChildren()
+                self.world.removeGhost(spring.node())
+                taskMgr.add(self.boostResetTask, "boostResetTask")
+                if self.booosted is False:
+                    self.booosted = True
+                    self.boostBar = DirectWaitBar(text="Boost",
+                                                  value=5,
+                                                  range=BOOST_TIME,
+                                                  pos=(0, 1, 0.8),
+                                                  scale=(0.5, 0.5, 0.2))
+                    taskMgr.add(self.updateBoostBarTask, 'updateBoostBarTask')
+        return task.cont
+
+    def boostResetTask(self, task):
+        if task.time < BOOST_TIME:
+            return task.cont
+        else:
+            self.booosted = False
+            return task.done
+
+    def playerPositionCheckTask(self, task):
+        height = self.characterNP.getZ()
+        if height < 5:
+            print "player deaded"
+            self.deadthSound.play()
+            self.booosted = False
+            self.placePlayer()
+        else:
+            if self.level is 1:
+                vec = self.characterNP.getPos() - LEVEL_2_POS
+                if vec.length() < 3:
+                    print "Compeleted level 1"
+                    self.level = 2
+                    self.completeLevelSound.play()
+            else:
+                vec = self.characterNP.getPos() - LEVEL_3_POS
+                if vec.length() < 3:
+                    print "Compeleted level 2"
+        return task.cont
+
+    def cameraPositionTask(self, task):
+        base.camera.setX(self.characterNP, 0)
+        base.camera.setY(self.characterNP, -10)
+        base.camera.setZ(self.characterNP, self.cameraHeight)
+        position = self.characterNP.getPos()
+        position.setZ(position.getZ() + 2)
+        base.camera.lookAt(position)
+        return task.cont
+
+    def enemyAttackTask(self, task):
         for index, enemy in enumerate(self.enemys):
             target = self.characterNP.getPos()
             target.setZ(enemy.getZ())
@@ -123,7 +190,7 @@ class GameBase(ShowBase):
                     self.enemyActors[index].play('swing')
                     self.pushSound.play()
                     self.enemyAttackPos[index] = True
-                    taskMgr.add(self.resetAccackPose, 'resetAttackPose')
+                    taskMgr.add(self.resetPoseTask, 'resetAttackPose')
                 if distance > TYPE_1_ENEMY_ATTACK_DISTANCE and not self.enemyAttackPos[index]:
                     enemy.node().setLinearMovement(Vec3(0, ENEMY_MOVING_SPEED, 0), True)
                 else:
@@ -139,12 +206,20 @@ class GameBase(ShowBase):
                 enemy.node().setLinearMovement(Vec3(0, 0, 0), True)
         return task.cont
 
-    def update(self, task):
-        self.processInputs()
+    def physicsUpdateTask(self, task):
         self.world.doPhysics(globalClock.getDt(), 4, 1.0 / 240.0)
         return task.cont
 
-    def processInputs(self):
+    def resetPoseTask(self, task):
+        if task.time < 1:
+            return task.cont
+        else:
+            for index in range(len(self.enemyAttackPos)):
+                self.enemyAttackPos[index] = False
+                self.enemyIsRunning[index] = False
+            return task.done
+
+    def inputProcessTask(self, task):
         if inputState.isSet('cameraHigher'):
             self.cameraHeight += 0.1
         if inputState.isSet('cameraLower'):
@@ -169,15 +244,16 @@ class GameBase(ShowBase):
             self.runningPose = False
             self.actorNP.play("jump")
             if self.booosted:
-                self.character.setMaxJumpHeight(self.jumpHeight * 2)
+                self.character.setMaxJumpHeight(JUMP_HEIGHT * 2)
                 self.character.setJumpSpeed(JUMP_SPEED * 2)
             else:
-                self.character.setMaxJumpHeight(self.jumpHeight)
+                self.character.setMaxJumpHeight(JUMP_HEIGHT)
                 self.character.setJumpSpeed(JUMP_SPEED)
             self.character.doJump()
             self.jumpSound.play()
             self.inTheAir = True
-            taskMgr.add(self.resetInTheAir, "resetInTheAir")
+            taskMgr.add(self.resetCharacterStatusTask,
+                        "resetCharacterStatusTask")
         if inputState.isSet('turnLeft'):
             turningAngle = 120.0
             isMovingDirection = True
@@ -203,374 +279,7 @@ class GameBase(ShowBase):
             self.pushed = False
         self.character.setLinearMovement(movingDirection * MOVING_SPEED, True)
         self.character.setAngularMovement(turningAngle)
-
-    def positionCamera(self, task):
-        base.camera.setX(self.characterNP, 0)
-        base.camera.setY(self.characterNP, -10)
-        base.camera.setZ(self.characterNP, self.cameraHeight)
-        position = self.characterNP.getPos()
-        position.setZ(position.getZ() + 2)
-        base.camera.lookAt(position)
         return task.cont
-
-    # Setup functions for Game
-    def setupWorld(self):
-        base.setBackgroundColor(0.1, 0.1, 0.8, 1)
-        base.setFrameRateMeter(True)
-        # setup debugNode
-        self.debugNP = self.render.attachNewNode(BulletDebugNode('Debug'))
-        self.debugNP.show()
-        # created Bullet Physics World
-        self.world = BulletWorld()
-        self.world.setGravity(Vec3(0, 0, -9.81))
-        # add debugNode to the world
-        self.world.setDebugNode(self.debugNP.node())
-        # other setups
-        self.setupLights()
-        self.setupControlKeys()
-        self.addGround()
-        self.addPlayer()
-        self.addEnemys()
-
-    def addGround(self):
-        shape = BulletPlaneShape(Vec3(0, 0, 1), 0)
-        floorNP = self.render.attachNewNode(BulletRigidBodyNode('Ground'))
-        floorNP.node().addShape(shape)
-        floorNP.setPos(0, 0, 0)
-        floorNP.setCollideMask(BitMask32.allOn())
-        self.world.attachRigidBody(floorNP.node())
-
-    def addPlayer(self):
-        shape = BulletBoxShape(Vec3(0.3, 0.2, 0.7))
-        self.character = BulletCharacterControllerNode(shape, 0.4, 'Player-1')
-        self.character.setIntoCollideMask(BitMask32.allOn())
-        self.characterNP = self.render.attachNewNode(self.character)
-        self.characterNP.setH(45)
-        self.characterNP.setCollideMask(BitMask32.allOn())
-        self.world.attachCharacter(self.character)
-        self.actorNP = Actor('models/Actors/lego/Bricker/Bricker3.egg',
-                             {
-                                 'fallbackGetup': 'models/Actors/lego/Bricker/Bricker-FallbackGetup.egg',
-                                 'fallforwardGetup': 'models/Actors/lego/Bricker/Bricker-FallforwardGetup.egg',
-                                 'fireball': 'models/Actors/lego/Bricker/Bricker-fireball.egg',
-                                 'jump': 'models/Actors/lego/Bricker/Bricker-jump.egg',
-                                 'punching': 'models/Actors/lego/Bricker/Bricker-punching.egg',
-                                 'run': 'models/Actors/lego/Bricker/Bricker-run.egg',
-                                 'superpunch': 'models/Actors/lego/Bricker/Bricker-superpunch.egg',
-                                 'walk': 'models/Actors/lego/Bricker/Bricker-walk.egg'
-                             })
-        self.actorNP.reparentTo(self.characterNP)
-        self.actorNP.setScale(0.3048)
-        self.actorNP.setH(180)
-        self.actorNP.setPos(0, 0, 0.4)
-        self.runningPose = False
-
-    def setupLights(self):
-        alight = AmbientLight('ambientLight')
-        alight.setColor(Vec4(0.5, 0.5, 0.5, 1))
-        alightNP = render.attachNewNode(alight)
-        dlight = DirectionalLight('directionalLight')
-        dlight.setDirection(Vec3(1, 1, -1))
-        dlight.setColor(Vec4(0.7, 0.7, 0.7, 1))
-        dlightNP = render.attachNewNode(dlight)
-        self.render.clearLight()
-        self.render.setLight(alightNP)
-        self.render.setLight(dlightNP)
-        print "Done Setup Light"
-
-    def setupControlKeys(self):
-        base.disableMouse()
-        self.accept('escape', self.Exit)
-        # self.accept('r', self.Reset)
-        self.accept('t', self.Debug)
-        inputState.watchWithModifiers('forward', 'w')
-        inputState.watchWithModifiers('reverse', 's')
-        inputState.watchWithModifiers('turnLeft', 'a')
-        inputState.watchWithModifiers('turnRight', 'd')
-        inputState.watchWithModifiers('jump', 'space')
-        inputState.watchWithModifiers('cameraHigher', 'q')
-        inputState.watchWithModifiers('cameraLower', 'e')
-
-        # action tests
-        inputState.watchWithModifiers('fallbackGetup', '1')
-        inputState.watchWithModifiers('fallforwardGetup', '2')
-        inputState.watchWithModifiers('fireball', '3')
-        inputState.watchWithModifiers('jump', '4')
-        inputState.watchWithModifiers('punching', '5')
-        inputState.watchWithModifiers('run', '6')
-        inputState.watchWithModifiers('superpunch', '7')
-        inputState.watchWithModifiers('walk', '8')
-        print "Done Setup Control"
-
-    def resetInTheAir(self, task):
-        if task.time < 1.2:
-            return task.cont
-        else:
-            self.inTheAir = False
-            return task.done
-
-    def resetJumpHeight(self, task):
-        if task.time < 10:
-            return task.cont
-        else:
-            self.booosted = False
-            return task.done
-
-    def Exit(self):
-        # self.cleanup()
-        sys.exit(1)
-
-    def Debug(self):
-        print "Debug Mode Toggled"
-        if self.debugNP.isHidden():
-            self.debugNP.show()
-        else:
-            self.debugNP.hide()
-
-    def startLevel1(self):
-        self.level = 1
-        self.startGame()
-        # self.run()
-
-    def startLevel2(self):
-        self.level = 2
-        self.startGame()
-        # self.run()
-
-    def startGame(self):
-        self.l1.destroy()
-        self.l2.destroy()
-        self.setupBase()
-        self.loadMap()
-        self.loadStages()
-        if self.level is 2:
-            self.characterNP.setPos(LEVEL_2_POS)
-        taskMgr.add(self.checkCollectable, "checkCollectable")
-        taskMgr.add(self.checkPosition, "checkPosition")
-        self.timeBar = DirectWaitBar(text="Time",
-                                     value=0,
-                                     range=TIME_LIMIT,
-                                     pos=(0, .4, .9),
-                                     scale=(1, 0.5, 0.2))
-        self.resetCharacterPosition()
-
-    def checkCollectable(self, task):
-        for spring in self.springs:
-            contactResult = self.world.contactTestPair(
-                self.character, spring.node())
-            if len(contactResult.getContacts()) > 0:
-                self.pickupSpringSound.play()
-                # print "Sphere is in contact with: ", spring.getName()
-                spring.node().removeAllChildren()
-                self.world.removeGhost(spring.node())
-                taskMgr.add(self.resetJumpHeight, "resetJumpHeight")
-                if self.booosted is False:
-                    self.booosted = True
-                    self.boostBar = DirectWaitBar(text="Boost",
-                                                  value=5,
-                                                  range=BOOST_TIME,
-                                                  pos=(0, 1, 0.8),
-                                                  scale=(0.5, 0.5, 0.2))
-                    taskMgr.add(self.updateBoostStatus, 'updateBoostStatus')
-        return task.cont
-
-    def updateBoostStatus(self, task):
-        if task.time < BOOST_TIME:
-            self.boostBar["value"] = task.time
-            return task.cont
-        else:
-            self.boostBar.destroy()
-            return task.done
-
-    def checkPosition(self, task):
-        height = self.characterNP.getZ()
-        if height < 5:
-            print "player deaded"
-            self.deadthSound.play()
-            self.booosted = False
-            self.resetCharacterPosition()
-        else:
-            if self.level is 1:
-                vec = self.characterNP.getPos() - LEVEL_2_POS
-                if vec.length() < 3:
-                    print "Compeleted level 1"
-                    self.level = 2
-                    self.completeLevelSound.play()
-                # print "{} until level 1 check point".format(vec.length())
-            else:
-                vec = self.characterNP.getPos() - LEVEL_3_POS
-                if vec.length() < 3:
-                    print "Compeleted level 2"
-                # print "{} until compelete check point".format(vec.length())
-        return task.cont
-
-    def resetCharacterPosition(self):
-        if self.level is 1:
-            self.characterNP.setPos(LEVEL_1_POS)
-        else:
-            self.characterNP.setPos(LEVEL_2_POS)
-        taskMgr.add(self.countDown, 'countDown')
-
-    def countDown(self, task):
-        if task.time < TIME_LIMIT:
-            self.timeBar['value'] = task.time
-            return task.cont
-        else:
-            print "Time over, Game Restart"
-            self.resetCharacterPosition()
-            return task.done
-
-    def addWall(self, size, posX, posY):
-        shape = BulletBoxShape(size)
-        wallNP = self.render.attachNewNode(BulletRigidBodyNode('wall'))
-        wallNP.node().addShape(shape)
-        wallNP.setPos(posX, posY, size.getZ())
-        wallNP.setCollideMask(BitMask32.allOn())
-        if (posY is 0):
-            left = -(size.getY())
-            right = -left
-            pos = left - 5
-            while pos <= right:
-                wallModel = loader.loadModel('models/fence.egg')
-                wallModel.reparentTo(wallNP)
-                wallModel.setPos(0, pos, -(size.getZ()))
-                wallModel.setScale(1, 1, 1)
-                wallModel.setH(90)
-                pos += 13.5
-        else:
-            left = -(size.getX())
-            right = -left
-            pos = left - 5
-            while pos <= right:
-                wallModel = loader.loadModel('models/fence.egg')
-                wallModel.reparentTo(wallNP)
-                wallModel.setPos(pos, 0, -(size.getZ()))
-                wallModel.setScale(1, 1, 1)
-                pos += 13.5
-
-        self.world.attachRigidBody(wallNP.node())
-
-    def addSimpleBox(self, boxSize, pos, scale, heading, name, modelPath, shift=Vec3(0, 0, 0)):
-        # create shape
-        shape = BulletBoxShape(boxSize)
-        # create node and attatch to render
-        objNP = self.render.attachNewNode(BulletRigidBodyNode(name))
-        objNP.node().addShape(shape)
-        objNP.setPos(pos.getX(), pos.getY(), pos.getZ() + boxSize.getZ())
-        objNP.setCollideMask(BitMask32.allOn())
-        self.world.attachRigidBody(objNP.node())
-        # load model
-        objModel = self.loader.loadModel(modelPath)
-        # attach to objectNodePath
-        objModel.reparentTo(objNP)
-        objModel.setPos(shift.getX(), shift.getY(),
-                        shift.getZ() - boxSize.getZ())
-        objModel.setScale(scale.getX(), scale.getY(), scale.getZ())
-
-    def addStage(self, boxSize, pos, name, modelPath, heading=0):
-        # create a BodyNode and attach to render become a NodePath
-        objNP = self.render.attachNewNode(BulletRigidBodyNode(name))
-        # attach the BodyNode inside the NodePath to physics world
-        self.world.attachRigidBody(objNP.node())
-
-        # set the properties of the NodePath
-        #   - shape
-        shape = BulletBoxShape(boxSize)
-        objNP.node().addShape(shape)
-        #   - position
-        objNP.setPos(pos.getX(), pos.getY(), pos.getZ())
-        #   - collideMask
-        objNP.setCollideMask(BitMask32.allOn())
-        #   - model
-        objModel = self.loader.loadModel(modelPath)
-        objModel.setScale(boxSize.getX() * 2, boxSize.getY()
-                          * 2, boxSize.getZ() * 2)
-        objModel.setPos(0, 0, boxSize.getZ() / -1)
-        objModel.reparentTo(objNP)
-        #   - texture
-        ts = TextureStage.getDefault()
-        texture = objModel.getTexture()
-        objModel.setTexOffset(ts, -0.5, -0.5)
-        objModel.setTexScale(ts,
-                             boxSize.getX() / 2.0,
-                             boxSize.getY() / 2.0,
-                             boxSize.getZ() / 2.0)
-
-    def addSpring(self, pos):
-        print "add spring #{} at: {}".format(len(self.springs), pos)
-        shape = BulletBoxShape(Vec3(0.3, 0.3, 0.8))
-        node = BulletGhostNode('Spring' + str(len(self.springs)))
-        node.addShape(shape)
-        springNP = self.render.attachNewNode(node)
-        springNP.setCollideMask(BitMask32.allOff())
-        springNP.setPos(pos.getX(), pos.getY(), pos.getZ() + 3.4)
-        modelNP = loader.loadModel('models/spring/spring.egg')
-        modelNP.reparentTo(springNP)
-        modelNP.setScale(1, 1, 1)
-        modelNP.setPos(0, 0, -1)
-        self.world.attachGhost(node)
-        self.springs.append(springNP)
-
-    def addStairs(self, origin, steps, size, spaceRatio, alignment):
-        for i in range(steps):
-            pos = origin + size * spaceRatio * i
-            if alignment == 'x':
-                pos.setX(origin.getX())
-            if alignment == 'y':
-                pos.setY(origin.getY())
-            if alignment == 'z':
-                pos.setZ(origin.getZ())
-            self.stair(name="stare{}".format(i),
-                       size=size,
-                       pos=pos)
-
-    def stair(self, name, size, pos):
-        shape = BulletBoxShape(size * 0.5)
-        stairNP = render.attachNewNode(
-            BulletRigidBodyNode(name))
-        stairNP.node().addShape(shape)
-        stairNP.setPos(pos)
-        stairNP.setCollideMask(BitMask32.allOn())
-        modelNP = loader.loadModel('models/box.egg')
-        modelNP.reparentTo(stairNP)
-        modelNP.setPos(-size.x / 2.0, -size.y / 2.0, -size.z / 2.0)
-        modelNP.setScale(size)
-        self.world.attachRigidBody(stairNP.node())
-
-    def addEnemys(self):
-        for pos in TYPE_1_ENEMY_POS_LIST:
-            self.addEnemy(pos)
-
-    def addEnemy(self, pos):
-        # print "add Enemey at ", pos
-        shape = BulletBoxShape(Vec3(0.3, 0.2, 0.7))
-        enemyNode = BulletCharacterControllerNode(
-            shape, 0.4, 'Enemy' + str(len(self.enemys)))
-        enemyNode.setIntoCollideMask(BitMask32.allOn())
-        enemyNP = self.render.attachNewNode(enemyNode)
-        enemyNP.setH(45)
-        enemyNP.setCollideMask(BitMask32.allOn())
-        enemyNP.setPos(pos)
-        self.enemys.append(enemyNP)
-        self.world.attachCharacter(enemyNode)
-
-        actor = Actor('models/Actors/lego/SecurityGuard/SecurityGuard.egg',
-                      {
-                          'fallbackGetup': 'models/Actors/lego/SecurityGuard/SecurityGuard-fallbackGetup.egg',
-                          'fallforwardGetup': 'models/Actors/lego/SecurityGuard/SecurityGuard-fallforwardGetup.egg',
-                          'firegun': 'models/Actors/lego/SecurityGuard/SecurityGuard-firegun.egg',
-                          'jump': 'models/Actors/lego/SecurityGuard/SecurityGuard-jump.egg',
-                          'run': 'models/Actors/lego/SecurityGuard/SecurityGuard-run.egg',
-                          'swing': 'models/Actors/lego/SecurityGuard/SecurityGuard-swing.egg',
-                          'walk': 'models/Actors/lego/SecurityGuard/SecurityGuard-walk.egg'
-                      })
-        actor.reparentTo(enemyNP)
-        actor.setScale(0.3048)
-        actor.setH(180)
-        actor.setPos(0, 0, 0.4)
-        self.enemyActors.append(actor)
-        self.enemyIsRunning.append(False)
-        self.enemyAttackPos.append(False)
 
 myGame = GameBase()
 myGame.run()
