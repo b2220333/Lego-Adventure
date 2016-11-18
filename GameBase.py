@@ -246,9 +246,9 @@ class GameBase(MapWithCharacters):
 
         if (task.time % 2) < 0.01:
             # clean up old balls
-            for ball in self.sphereNodes:
-                ball.removeAllChildren()
-                self.world.removeRigidBody(ball)
+            # for ball in self.sphereNodes:
+            #     ball.removeAllChildren()
+            #     self.world.removeRigidBody(ball)
             # for every enemy
             for index, enemy in enumerate(self.type_2_enemys):
                 target = self.characterNP.getPos()

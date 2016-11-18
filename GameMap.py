@@ -19,7 +19,7 @@ class GameMap(ShowBase):
         base.setFrameRateMeter(True)
         # setup debugNode
         self.debugNP = self.render.attachNewNode(BulletDebugNode('Debug'))
-        self.debugNP.show()
+        # self.debugNP.show()
         # created Bullet Physics World
         self.world = BulletWorld()
         self.world.setGravity(Vec3(0, 0, -9.81))
@@ -124,7 +124,7 @@ class GameMap(ShowBase):
             objNP.setCollideMask(BitMask32.allOn())
             #   - model
             objModel = self.loader.loadModel(
-                "models/EnvBuildingBlocks/brick-cube/brick.egg")
+                "models/brick-cube/brick.egg")
             objModel.setScale(boxSize.getX() * 2, boxSize.getY()
                               * 2, boxSize.getZ() * 2)
             objModel.setPos(0, 0, boxSize.getZ() / -1)
