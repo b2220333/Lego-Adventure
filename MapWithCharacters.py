@@ -102,7 +102,6 @@ class MapWithCharacters(GameMap):
             addEnemy(2, pos)
 
     def addSounds(self):
-        # http://www.2gei.com/sound/
         self.completeLevelSound = base.loader.loadSfx(
             "sounds/completeLevel.mp3")
         self.deadthSound = base.loader.loadSfx("sounds/dead.wav")
