@@ -4,6 +4,12 @@ from panda3d.bullet import BulletCharacterControllerNode
 from panda3d.core import *
 from Settings import *
 
+# Members:
+#   controllerNode
+#   nodePath
+#   animator
+#   pose
+
 class Character():
     def __init__(self, world, render, name, animator, pose):
         # Create a box shape

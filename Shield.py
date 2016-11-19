@@ -2,6 +2,11 @@ from Character import *
 from direct.actor.Actor import Actor
 from Settings import *
 
+# Members:
+#   controllerNode
+#   nodePath
+#   animator
+#   pose
 class Shield(Character):
     def __init__(self, world, render, name):
         animator = Actor('models/Actors/lego/Shield/Shield.egg',
