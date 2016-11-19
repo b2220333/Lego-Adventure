@@ -1,6 +1,15 @@
 # Import packages from panda3d to save 3d vectors
 from panda3d.core import Vec3
 
+# Constants
+DEFAULT_ANIMATOR_HEIGHT = 180
+DEFAULT_ANIMATOR_SCALE  = 0.3048
+DEFAULT_NODEPATH_HEIGHT = 45
+DEFAULT_ANIMATOR_OFFSET = Vec3(0, 0, 0.4)
+ATTACKING = 3
+RUNNUNG   = 1
+STANDING  = 0
+
 # Behavior Settings
 BOOST_TIME = 10
 ENEMY_TURNING_RADIUS = 0.75

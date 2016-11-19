@@ -5,6 +5,7 @@ from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletCharacterControllerNode
 from panda3d.core import *
 from Settings import *
+from Character import *
 
 
 class MapWithCharacters(GameMap):

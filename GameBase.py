@@ -43,12 +43,12 @@ class GameBase(MapWithCharacters):
         self.addTasks()
         # setup map for game
         self.setupMap()
-        # setup controlls
+        # setup controls
         self.setupControls()
-        # setup chatacters
+        # setup characters
         self.setupCharacters()
         self.placePlayer()
-        # add countdown timebar
+        # add countdown time bar
         self.timeBar = DirectWaitBar(text="Time",
                                      value=0,
                                      range=TIME_LIMIT,
