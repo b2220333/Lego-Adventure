@@ -8,7 +8,7 @@ from Settings import *
 #   animator
 #   pose
 class Shield(Character):
-    def __init__(self, world, render, name):
+    def __init__(self, world, render, name, position):
         animator = Actor('models/Actors/lego/Shield/Shield.egg',
                               {
                                   'FallbackGetup': 'models/Actors/lego/Shield/Shield-FallbackGetup.egg',
@@ -17,4 +17,4 @@ class Shield(Character):
                                   'punch': 'models/Actors/lego/Shield/Shield-punch.egg',
                                   'walk': 'models/Actors/lego/Shield/Shield-walk.egg'
                               })
-        Character.__init__(self, world, render, name, animator, STANDING)
+        Character.__init__(self, world, render, name, animator, position, STANDING)

@@ -11,7 +11,7 @@ from Settings import *
 #   pose
 
 class Character():
-    def __init__(self, world, render, name, animator, pose):
+    def __init__(self, world, render, name, animator, position, pose):
         # Create a box shape
         shape = BulletBoxShape(Vec3(0.3, 0.2, 0.7))
         # Create a Controller Node with the shape
@@ -25,6 +25,7 @@ class Character():
         # Setup the nodePath
         self.nodePath.setCollideMask(BitMask32.allOn())
         self.nodePath.setH(DEFAULT_NODEPATH_HEIGHT)
+        self.nodePath.setPos(position)
 
         # Set the actor of the Character
         self.animator = animator

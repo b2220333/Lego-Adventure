@@ -15,6 +15,8 @@ from Settings import *
 class GameScene(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
+        self.level = 1
+
         self.setupScene()
         self.addCharacters()
 
@@ -31,6 +33,12 @@ class GameScene(ShowBase):
         # Load Game Map
         self.loadMap()
 
+    def addCharacters(self):
+        self.addPlayer()
+        self.addShield()
+        self.addGuard()
+
+# ==========    Functions setting up GameScene
     def loadMap(self):
         self.addSky()
         self.addGround()
@@ -38,7 +46,6 @@ class GameScene(ShowBase):
         self.addStages()
         self.addSpings()
 
-# ==========    Functions to help setting up Game Scene    ==========
     def addPhysicsWorld(self):
         # Create Physics World
         self.world = BulletWorld()
@@ -165,8 +172,21 @@ class GameScene(ShowBase):
             self.world.attachGhost(node)
             springs.append(springNP)
 
+
+# ==========    Functions add Characters into GameScene
     def addPlayer(self):
-        # TODO: remove test statements
-        shield = Shield(self.world, self.render, "s1")
-        guard = Guard(self.world, self.render, "g1")
-        player = Player(self.world, self.render, "p1")
+        shield = Player(self.world, self.render, "Bricker", PLAYER_POSITIONS[self.level])
+
+    def addShield(self):
+        counter = 0
+        for position in SHIELD_POSITIONS:
+            player = Shield(self.world, self.render, "Shield_{}".format(counter), position)
+            counter+=1
+
+    def addGuard(self):
+        counter = 0
+        for position in GUARD_POSITIONS:
+            guard = Guard(self.world, self.render, "Guard_{}".format(counter), position)
+            counter+=1
+
+

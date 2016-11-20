@@ -10,6 +10,33 @@ ATTACKING = 3
 RUNNUNG   = 1
 STANDING  = 0
 
+PLAYER_POSITIONS = [Vec3(0, 0, 0),
+                    Vec3(-65, -65, 10),
+                    Vec3(-6, -9, 16.5),
+                    Vec3(73.5, -43.0, 46.8)]
+
+
+
+SHIELD_POSITIONS = [Vec3(-20.4551, -32.5579, 12),
+                    Vec3(-0.269259, 2.59712, 16.36),
+                    Vec3(29.4766, 42.2148, 19.86),
+                    Vec3(39.9572, 71.1687, 21)]
+
+GUARD_POSITIONS = [Vec3(-16.296, -54.2117, 11),
+                   Vec3(-11.2137, -5.56247, 15),
+                   Vec3(16.9461, 31.4267, 19),
+                   Vec3(34.8673, 41.6622, 21),
+                   Vec3(34.7589, 51.4396, 20.86),
+                   Vec3(56.4356, 59.0785, 22),
+                   Vec3(72, 0, 30),
+                   Vec3(72, -10, 34),
+                   Vec3(72, -20, 38),
+                   Vec3(72, -30, 42),
+                   Vec3(72, -40, 46),
+                   Vec3(72, -80, 50),
+                   Vec3(61.7531, 80.0794, 23)]
+# OLD Settings
+
 # Behavior Settings
 BOOST_TIME = 10
 ENEMY_TURNING_RADIUS = 0.75
@@ -27,6 +54,8 @@ TYPE_1_ENEMY_MOVING_SPEED = 0.3
 TYPE_1_ENEMY_PUSH_DISTANCE = -1
 TYPE_2_ENEMY_ATTACK_RAIUS = 20
 
+
+# TODO: Remove this
 # Positions of Type 1 Enemy on the map
 TYPE_1_ENEMY_POS_LIST = [Vec3(-20.4551, -32.5579, 12),
                          Vec3(-0.269259, 2.59712, 16.36),

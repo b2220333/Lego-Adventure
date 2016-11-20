@@ -8,7 +8,7 @@ from Settings import *
 #   animator
 #   pose
 class Player(Character):
-    def __init__(self, world, render, name):
+    def __init__(self, world, render, name, position):
         animator = Actor('models/Actors/lego/Bricker/Bricker3.egg',
                              {
                                  'fallbackGetup': 'models/Actors/lego/Bricker/Bricker-FallbackGetup.egg',
@@ -20,4 +20,4 @@ class Player(Character):
                                  'superpunch': 'models/Actors/lego/Bricker/Bricker-superpunch.egg',
                                  'walk': 'models/Actors/lego/Bricker/Bricker-walk.egg'
                              })
-        Character.__init__(self, world, render, name, animator, STANDING)
+        Character.__init__(self, world, render, name, animator, position, STANDING)
