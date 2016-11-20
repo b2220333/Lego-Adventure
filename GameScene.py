@@ -18,13 +18,12 @@ class GameScene(ShowBase):
         self.level = 1
         # self.setupScene()
 
-
     def setupScene(self):
         # Set Scene Background Color
         base.setBackgroundColor(0.1, 0.1, 0.8, 1)
         base.setFrameRateMeter(True)
         # TODO: remove this Add Camera
-        self.cameraHeight = 50
+        self.cameraHeight = DEFAULT_CAMERA_HEIGHT
         # Add Physics to GameScene
         self.addPhysicsWorld()
         # Add lightings to GameScene

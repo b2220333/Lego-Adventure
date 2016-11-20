@@ -100,7 +100,8 @@ class Game(GameScene):
         inputState.watchWithModifiers('cameraLower', 'e')
 
     def placePlayer(self):
-        self.player.setPos(PLAYER_POSITIONS[self.level])
+        print("Level:", self.level, " Player @", PLAYER_POSITIONS[self.level])
+        self.player.setPosition(PLAYER_POSITIONS[self.level])
         self.player.lookAt(Vec3(0, 0, 0))
         self.health = HEALTH_LIMIT
         taskMgr.add(self.gameTimmerTask, 'gameTimmerTask')
@@ -171,6 +172,7 @@ class Game(GameScene):
 
     def playerHealthCheckTask(self, task):
         height = self.player.getHeight()
+        # print("Health: ", self.health, " Height: ", height)
         if height < 5 or self.health < 0:
             self.deadthSound.play()
             self.booosted = False
@@ -179,13 +181,13 @@ class Game(GameScene):
             if self.level is 1:
                 vec = self.player.getPos() - LEVEL_2_POS
                 if vec.length() < 3:
-                    print "Compeleted level 1"
+                    print "Completed level 1"
                     self.level = 2
                     self.completeLevelSound.play()
             else:
                 vec = self.player.getPos() - LEVEL_3_POS
                 if vec.length() < 3:
-                    print "Compeleted level 2"
+                    print "Completed level 2"
         return task.cont
 
     def cameraFollowingTask(self, task):
@@ -299,15 +301,15 @@ class Game(GameScene):
         if inputState.isSet('reverse'):
             movingDirection.setY(-PLAYER_SPEED)
             isMovingDirection = True
-        if inputState.isSet('left'):
-            movingDirection.setX(-2.0)
+        if inputState.isSet('turnLeft'):
+            turningAngle = 120.0
             isMovingDirection = True
-        if inputState.isSet('right'):
-            movingDirection.setX(2.0)
+        if inputState.isSet('turnRight'):
+            turningAngle = -120.0
             isMovingDirection = True
         if inputState.isSet('jump') and self.inTheAir is False:
             self.runningPose = False
-            self.actorNP.play("jump")
+            self.player.setPose(JUMPING)
             if self.booosted:
                 self.player.getcontrollerNode().setMaxJumpHeight(JUMP_HEIGHT * 2)
                 self.player.getcontrollerNode().setJumpSpeed(JUMP_SPEED * 2)
@@ -319,27 +321,14 @@ class Game(GameScene):
             self.inTheAir = True
             taskMgr.add(self.playerFallingTimmerTask,
                         "playerFallingTimmerTask")
-        if inputState.isSet('turnLeft'):
-            turningAngle = 120.0
-            isMovingDirection = True
-        if inputState.isSet('turnRight'):
-            turningAngle = -120.0
-            isMovingDirection = True
 
-        if self.inTheAir:
-            pass
-        else:
+        if self.inTheAir is False:
             if isMovingDirection:
                 if self.player.getPose != RUNNING:
-                    self.player.setPos(RUNNING)
-                    # self.actorNP.loop('run')
-                    # self.runningPose = True
+                    self.player.setPose(RUNNING)
             else:
                 if self.player.getPose() == RUNNING:
-                    self.player.setPos(WALKING)
-                    # self.actorNP.stop()
-                    # self.actorNP.pose("walk", 0)
-                    # self.runningPose = False
+                    self.player.setPose(STANDING)
 
         if self.pushed:
             movingDirection.setY(TYPE_1_ENEMY_PUSH_DISTANCE)

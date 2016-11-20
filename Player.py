@@ -25,14 +25,16 @@ class Player(Character):
     def getNodePath(self):
         return self.nodePath
 
-    def setPos(self, position):
+    def setPosition(self, position):
         self.nodePath.setPos(position)
 
     def lookAt(self, position):
         self.nodePath.lookAt(position)
 
     def getHeight(self):
-        return self.nodePath.getZ()
+        # print("Height: ", self.nodePath.getZ())
+        # return self.nodePath.getZ()
+        return 10
 
     def getPos(self):
         return self.nodePath.getPos()
@@ -44,10 +46,12 @@ class Player(Character):
         return self.pose
 
     def setPose(self, pose):
-        self.pose = pose
-        self.animator.stop()
-        if (self.pose == RUNNING):
-            self.animator.loop('run')
-        elif (self.pose == WALKING):
-            self.animator.loop('run')
-
+        if self.pose != pose:
+            self.pose = pose
+            self.animator.stop()
+            if (self.pose == RUNNING):
+                self.animator.loop('run')
+            elif (self.pose == WALKING):
+                self.animator.loop('run')
+            elif (self.pose == STANDING):
+                self.animator.pose('walk', 0)
