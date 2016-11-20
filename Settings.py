@@ -6,9 +6,11 @@ DEFAULT_ANIMATOR_HEIGHT = 180
 DEFAULT_ANIMATOR_SCALE  = 0.3048
 DEFAULT_NODEPATH_HEIGHT = 45
 DEFAULT_ANIMATOR_OFFSET = Vec3(0, 0, 0.4)
-ATTACKING = 3
-RUNNUNG   = 1
-STANDING  = 0
+ATTACKING = 0
+RUNNING   = 1
+STANDING  = 2
+WALKING   = 3
+PLAYER_FALLING_POSE_TIME = 1.2
 
 PLAYER_POSITIONS = [Vec3(0, 0, 0),
                     Vec3(-65, -65, 10),
@@ -35,6 +37,8 @@ GUARD_POSITIONS = [Vec3(-16.296, -54.2117, 11),
                    Vec3(72, -40, 46),
                    Vec3(72, -80, 50),
                    Vec3(61.7531, 80.0794, 23)]
+
+
 # OLD Settings
 
 # Behavior Settings

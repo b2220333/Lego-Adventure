@@ -16,9 +16,8 @@ class GameScene(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
         self.level = 1
+        # self.setupScene()
 
-        self.setupScene()
-        self.addCharacters()
 
     def setupScene(self):
         # Set Scene Background Color
@@ -32,11 +31,31 @@ class GameScene(ShowBase):
         self.addLights()
         # Load Game Map
         self.loadMap()
+        # Add Character
+        self.addCharacters()
+        # Add Sound Effects
+        self.addSoundEffects()
 
     def addCharacters(self):
         self.addPlayer()
         self.addShield()
         self.addGuard()
+
+    def addSoundEffects(self):
+        self.completeLevelSound = base.loader.loadSfx(
+            "sounds/completeLevel.mp3")
+        self.deadthSound = base.loader.loadSfx("sounds/dead.wav")
+        # self.completeLevelSound.setVolume(5)
+        # self.completeLevelSound.play()
+        self.hitSound = base.loader.loadSfx("sounds/hit.mp3")
+        self.pushSound = base.loader.loadSfx("sounds/push.wav")
+        self.jumpSound = base.loader.loadSfx("sounds/Jump.wav")
+        self.pickupSpringSound = base.loader.loadSfx(
+            "sounds/Pickup_Spring.wav")
+        self.backgroundSound = base.loader.loadSfx("sounds/background.mp3")
+        self.backgroundSound.setVolume(0.5)
+        self.backgroundSound.setLoop(True)
+        self.backgroundSound.play()
 
 # ==========    Functions setting up GameScene
     def loadMap(self):
@@ -155,12 +174,11 @@ class GameScene(ShowBase):
                                  boxSize.getZ() / 2.0)
 
     def addSpings(self):
-        # TODO: remove springs
-        springs = []
+        self.springs = []
         for pos in SPRING_LIST:
-            print "add spring #{} at: {}".format(len(springs), pos)
+            print "add spring #{} at: {}".format(len(self.springs), pos)
             shape = BulletBoxShape(Vec3(0.3, 0.3, 0.8))
-            node = BulletGhostNode('Spring' + str(len(springs)))
+            node = BulletGhostNode('Spring' + str(len(self.springs)))
             node.addShape(shape)
             springNP = self.render.attachNewNode(node)
             springNP.setCollideMask(BitMask32.allOff())
@@ -170,12 +188,12 @@ class GameScene(ShowBase):
             modelNP.setScale(1, 1, 1)
             modelNP.setPos(0, 0, -1)
             self.world.attachGhost(node)
-            springs.append(springNP)
+            self.springs.append(springNP)
 
 
 # ==========    Functions add Characters into GameScene
     def addPlayer(self):
-        shield = Player(self.world, self.render, "Bricker", PLAYER_POSITIONS[self.level])
+        self.player = Player(self.world, self.render, "Bricker", PLAYER_POSITIONS[self.level])
 
     def addShield(self):
         counter = 0

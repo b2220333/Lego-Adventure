@@ -21,3 +21,33 @@ class Player(Character):
                                  'walk': 'models/Actors/lego/Bricker/Bricker-walk.egg'
                              })
         Character.__init__(self, world, render, name, animator, position, STANDING)
+
+    def getNodePath(self):
+        return self.nodePath
+
+    def setPos(self, position):
+        self.nodePath.setPos(position)
+
+    def lookAt(self, position):
+        self.nodePath.lookAt(position)
+
+    def getHeight(self):
+        return self.nodePath.getZ()
+
+    def getPos(self):
+        return self.nodePath.getPos()
+
+    def getcontrollerNode(self):
+        return self.controllerNode
+
+    def getPose(self):
+        return self.pose
+
+    def setPose(self, pose):
+        self.pose = pose
+        self.animator.stop()
+        if (self.pose == RUNNING):
+            self.animator.loop('run')
+        elif (self.pose == WALKING):
+            self.animator.loop('run')
+
