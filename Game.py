@@ -2,15 +2,14 @@ from GameScene import *
 from direct.gui.DirectGui import *
 from direct.showbase.InputStateGlobal import inputState
 from Settings import *
+from panda3d.core import ClockObject
 
 class Game(GameScene):
     def __init__(self):
         GameScene.__init__(self)
         self.chooseLevel()
-        # TODO: REMOVE THESE
-        self.inTheAir = False
         self.booosted = False
-        self.currentLevel = 1
+        # TODO: REMOVE THESE
         self.type_1_enemys = []
         self.type_1_enemy_actors = []
         self.type_1_enemy_is_running = []
@@ -104,6 +103,7 @@ class Game(GameScene):
         self.player.setPosition(PLAYER_POSITIONS[self.level])
         self.player.lookAt(Vec3(0, 0, 0))
         self.health = HEALTH_LIMIT
+        self.isMoving = False
         taskMgr.add(self.gameTimmerTask, 'gameTimmerTask')
 
 
@@ -287,28 +287,38 @@ class Game(GameScene):
             return task.done
 
     def inputProcessingTask(self, task):
+        # Camera Control Keys
         if inputState.isSet('cameraHigher'):
             self.cameraHeight += 0.1
         if inputState.isSet('cameraLower'):
             self.cameraHeight -= 0.1
 
-        movingDirection = Vec3(0, 0, 0)
+
+        move = Vec3(0, 0, 0)
         turningAngle = 0.0
-        isMovingDirection = False
+
+        # Character Movements
         if inputState.isSet('forward'):
-            movingDirection.setY(PLAYER_SPEED)
-            isMovingDirection = True
-        if inputState.isSet('reverse'):
-            movingDirection.setY(-PLAYER_SPEED)
-            isMovingDirection = True
+            move.setY(PLAYER_SPEED)
+            self.isMoving = True
+        elif inputState.isSet('reverse'):
+            move.setY(-PLAYER_SPEED)
+            self.isMoving = True
+
         if inputState.isSet('turnLeft'):
             turningAngle = 120.0
-            isMovingDirection = True
-        if inputState.isSet('turnRight'):
+            self.isMoving = True
+        elif inputState.isSet('turnRight'):
             turningAngle = -120.0
-            isMovingDirection = True
-        if inputState.isSet('jump') and self.inTheAir is False:
-            self.runningPose = False
+            self.isMoving = True
+
+        if self.isMoving is False:
+            self.player.setPose(STANDING)
+        else:
+            self.player.setPose(WALKING)
+        self.isMoving = False
+
+        if inputState.isSet('jump'):
             self.player.setPose(JUMPING)
             if self.booosted:
                 self.player.getcontrollerNode().setMaxJumpHeight(JUMP_HEIGHT * 2)
@@ -317,22 +327,10 @@ class Game(GameScene):
                 self.player.getcontrollerNode().setMaxJumpHeight(JUMP_HEIGHT)
                 self.player.getcontrollerNode().setJumpSpeed(JUMP_SPEED)
             self.player.getcontrollerNode().doJump()
-            self.jumpSound.play()
-            self.inTheAir = True
-            taskMgr.add(self.playerFallingTimmerTask,
-                        "playerFallingTimmerTask")
 
-        if self.inTheAir is False:
-            if isMovingDirection:
-                if self.player.getPose != RUNNING:
-                    self.player.setPose(RUNNING)
-            else:
-                if self.player.getPose() == RUNNING:
-                    self.player.setPose(STANDING)
-
-        if self.pushed:
-            movingDirection.setY(TYPE_1_ENEMY_PUSH_DISTANCE)
-            self.pushed = False
-        self.player.getcontrollerNode().setLinearMovement(movingDirection, True)
+        # if self.pushed:
+        #     move.setY(TYPE_1_ENEMY_PUSH_DISTANCE)
+        #     self.pushed = False
+        self.player.getcontrollerNode().setLinearMovement(move, True)
         self.player.getcontrollerNode().setAngularMovement(turningAngle)
         return task.cont

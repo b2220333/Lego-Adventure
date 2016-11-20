@@ -20,6 +20,7 @@ class Player(Character):
                                  'superpunch': 'models/Actors/lego/Bricker/Bricker-superpunch.egg',
                                  'walk': 'models/Actors/lego/Bricker/Bricker-walk.egg'
                              })
+        animator.setPlayRate(0.5, 'jump')
         Character.__init__(self, world, render, name, animator, position, STANDING)
 
     def getNodePath(self):
@@ -46,12 +47,23 @@ class Player(Character):
         return self.pose
 
     def setPose(self, pose):
-        if self.pose != pose:
-            self.pose = pose
-            self.animator.stop()
-            if (self.pose == RUNNING):
-                self.animator.loop('run')
-            elif (self.pose == WALKING):
-                self.animator.loop('run')
-            elif (self.pose == STANDING):
-                self.animator.pose('walk', 0)
+        # print("Pose:" + str(self.animator.getCurrentAnim()))
+        if self.animator.getCurrentAnim() != 'jump':
+            if pose == JUMPING:
+                self.animator.stop()
+                self.animator.play('jump')
+                print("Jump")
+                self.pose = JUMPING
+            else:
+                if self.pose != pose:
+                    self.pose = pose
+                    self.animator.stop()
+                    if (self.pose == RUNNING):
+                        self.animator.loop('run')
+                        print("Run")
+                    elif (self.pose == WALKING):
+                        self.animator.loop('run')
+                        print("Walking")
+                    elif (self.pose == STANDING):
+                        self.animator.pose('walk', 0)
+                        print("Standing")
