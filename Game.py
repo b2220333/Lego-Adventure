@@ -69,8 +69,8 @@ class Game(GameScene):
         taskMgr.add(self.physicsUpdateTask, 'physicsUpdateTask')
         taskMgr.add(self.inputProcessingTask, 'inputProcessingTask')
         taskMgr.add(self.cameraFollowingTask, 'cameraFollowingTask')
-        taskMgr.add(self.shieldAttackingTask, 'shieldAttackingTask')
-        taskMgr.add(self.guardAttachingTask, 'guardAttachingTask')
+        taskMgr.add(self.attackingTask, 'attackingTask')
+        # taskMgr.add(self.guardAttachingTask, 'guardAttachingTask')
         taskMgr.add(self.collectableCheckTask, "collectableCheckTask")
         taskMgr.add(self.hitCheckTask, "hitCheckTask")
         taskMgr.add(self.playerHealthCheckTask, "playerHealthCheckTask")
@@ -136,7 +136,7 @@ class Game(GameScene):
     def hitCheckTask(self, task):
         for ball in self.sphereNodes:
             contactResult = self.world.contactTestPair(
-                self.player.getcontrollerNode(), ball)
+                self.player.getControllerNode(), ball)
             if len(contactResult.getContacts()) > 0:
                 self.health -= 1
                 self.healthBar['value'] = self.health
@@ -146,7 +146,7 @@ class Game(GameScene):
     def collectableCheckTask(self, task):
         for spring in self.springs:
             contactResult = self.world.contactTestPair(
-                self.player.getcontrollerNode(), spring.node())
+                self.player.getControllerNode(), spring.node())
             if len(contactResult.getContacts()) > 0:
                 self.pickupSpringSound.play()
                 # print "Sphere is in contact with: ", spring.getName()
@@ -179,13 +179,13 @@ class Game(GameScene):
             self.placePlayer()
         else:
             if self.level is 1:
-                vec = self.player.getPos() - LEVEL_2_POS
+                vec = self.player.getPosition() - LEVEL_2_POS
                 if vec.length() < 3:
                     print "Completed level 1"
                     self.level = 2
                     self.completeLevelSound.play()
             else:
-                vec = self.player.getPos() - LEVEL_3_POS
+                vec = self.player.getPosition() - LEVEL_3_POS
                 if vec.length() < 3:
                     print "Completed level 2"
         return task.cont
@@ -194,84 +194,58 @@ class Game(GameScene):
         base.camera.setX(self.player.getNodePath(), 0)
         base.camera.setY(self.player.getNodePath(), -10)
         base.camera.setZ(self.player.getNodePath(), self.cameraHeight)
-        position = self.player.getPos()
+        position = self.player.getPosition()
         position.setZ(position.getZ() + 2)
         base.camera.lookAt(position)
         return task.cont
 
-    def shieldAttackingTask(self, task):
-        for index, enemy in enumerate(self.type_1_enemys):
-            target = self.player.getPos()
-            target.setZ(enemy.getZ())
-            enemy.lookAt(target)
-            vec = self.player.getPos() - enemy.getPos()
-            distance = vec.length()
-            heightDelta = vec.getZ()
-            if (distance < TYPE_1_ENEMY_ATTACK_RAIUS) and (abs(heightDelta) < 0.1):
-                if not self.type_1_enemy_is_running[index]:
-                    self.type_1_enemy_actors[index].loop('walk')
-                    self.type_1_enemy_is_running[index] = True
-
-                if not self.type_1_enemy_is_attacking_pose[index] and distance < TYPE_1_ENEMY_ATTACK_DISTANCE:
-                    self.type_1_enemy_actors[index].play('punch')
-                    self.pushSound.play()
-                    self.type_1_enemy_is_attacking_pose[index] = True
-                    taskMgr.add(self.resetPoseTask, 'resetAttackPose')
-                if distance > TYPE_1_ENEMY_ATTACK_DISTANCE and not self.type_1_enemy_is_attacking_pose[index]:
-                    enemy.node().setLinearMovement(Vec3(0, TYPE_1_ENEMY_MOVING_SPEED, 0), True)
-                else:
-                    enemy.node().setLinearMovement(Vec3(0, 0, 0), True)
-                    self.pushed = True
-                    self.pushedDirection = vec
-                vec.normalize()
-            else:
-                if self.type_1_enemy_is_running[index]:
-                    self.type_1_enemy_actors[index].stop()
-                    self.type_1_enemy_actors[index].pose('walk', 0)
-                    self.type_1_enemy_is_running[index] = False
-                enemy.node().setLinearMovement(Vec3(0, 0, 0), True)
+    def attackingTask(self, task):
+        for shield in self.shields:
+            shield.updatePlayerPosition(self.player.getPosition())
+        for guard in self.guards:
+            guard.updatePlayerPosition(self.player.getPosition())
         return task.cont
 
-    def guardAttachingTask(self, task):
-        if (task.time % 0.2) < 0.01:
-            for index, enemy in enumerate(self.type_2_enemys):
-                heading = enemy.getH()
-                enemy.lookAt(self.player.getPos())
-                if abs(heading - enemy.getH()) > 1:
-                    if not self.type_2_enemy_is_running[index]:
-                        self.type_2_enemy_actors[index].loop('walk')
-                    self.type_2_enemy_is_running[index] = True
-                else:
-                    if self.type_2_enemy_is_running[index]:
-                        self.type_2_enemy_actors[index].stop()
-                        self.type_2_enemy_actors[index].pose('walk', 0)
-                        self.type_2_enemy_is_running[index] = False
+    # def guardAttachingTask(self, task):
+    #     if (task.time % 0.2) < 0.01:
+    #         for index, enemy in enumerate(self.type_2_enemys):
+    #             heading = enemy.getH()
+    #             enemy.lookAt(self.player.getPosition())
+    #             if abs(heading - enemy.getH()) > 1:
+    #                 if not self.type_2_enemy_is_running[index]:
+    #                     self.type_2_enemy_actors[index].loop('walk')
+    #                 self.type_2_enemy_is_running[index] = True
+    #             else:
+    #                 if self.type_2_enemy_is_running[index]:
+    #                     self.type_2_enemy_actors[index].stop()
+    #                     self.type_2_enemy_actors[index].pose('walk', 0)
+    #                     self.type_2_enemy_is_running[index] = False
 
-        if (task.time % 2) < 0.01:
-            for index, enemy in enumerate(self.type_2_enemys):
-                target = self.player.getPos()
-                vec = self.player.getPos() - enemy.getPos()
-                distance = vec.length()
-                if distance < TYPE_2_ENEMY_ATTACK_RAIUS:
-                    self.type_2_enemy_actors[index].play('swing')
-                    # throw new ball
-                    pos = enemy.getPos()
-                    shooting_direction = self.player.getPos() - pos
-                    shooting_direction.normalize()
-                    print "shotting at: ", shooting_direction
-                    sphereNode = BulletRigidBodyNode('Ball')
-                    sphereNode.setMass(1.0)
-                    sphereNode.addShape(BulletSphereShape(0.2))
-                    sphere = self.render.attachNewNode(sphereNode)
-                    pos.setZ(pos.getZ() + 1)
-                    sphere.setPos(pos)
-                    smileyFace = self.loader.loadModel("models/smiley")
-                    smileyFace.setScale(0.2)
-                    smileyFace.reparentTo(sphere)
-                    self.world.attachRigidBody(sphereNode)
-                    sphereNode.applyCentralForce(shooting_direction * 1000)
-                    self.sphereNodes.append(sphereNode)
-        return task.cont
+    #     if (task.time % 2) < 0.01:
+    #         for index, enemy in enumerate(self.type_2_enemys):
+    #             target = self.player.getPosition()
+    #             vec = self.player.getPosition() - enemy.getPosition()
+    #             distance = vec.length()
+    #             if distance < TYPE_2_ENEMY_ATTACK_RAIUS:
+    #                 self.type_2_enemy_actors[index].play('swing')
+    #                 # throw new ball
+    #                 pos = enemy.getPosition()
+    #                 shooting_direction = self.player.getPosition() - pos
+    #                 shooting_direction.normalize()
+    #                 print "shotting at: ", shooting_direction
+    #                 sphereNode = BulletRigidBodyNode('Ball')
+    #                 sphereNode.setMass(1.0)
+    #                 sphereNode.addShape(BulletSphereShape(0.2))
+    #                 sphere = self.render.attachNewNode(sphereNode)
+    #                 pos.setZ(pos.getZ() + 1)
+    #                 sphere.setPos(pos)
+    #                 smileyFace = self.loader.loadModel("models/smiley")
+    #                 smileyFace.setScale(0.2)
+    #                 smileyFace.reparentTo(sphere)
+    #                 self.world.attachRigidBody(sphereNode)
+    #                 sphereNode.applyCentralForce(shooting_direction * 1000)
+    #                 self.sphereNodes.append(sphereNode)
+    #     return task.cont
 
     def physicsUpdateTask(self, task):
         self.world.doPhysics(globalClock.getDt(), 4, 1.0 / 240.0)
@@ -321,16 +295,16 @@ class Game(GameScene):
         if inputState.isSet('jump'):
             self.player.setPose(JUMPING)
             if self.booosted:
-                self.player.getcontrollerNode().setMaxJumpHeight(JUMP_HEIGHT * 2)
-                self.player.getcontrollerNode().setJumpSpeed(JUMP_SPEED * 2)
+                self.player.getControllerNode().setMaxJumpHeight(JUMP_HEIGHT * 2)
+                self.player.getControllerNode().setJumpSpeed(JUMP_SPEED * 2)
             else:
-                self.player.getcontrollerNode().setMaxJumpHeight(JUMP_HEIGHT)
-                self.player.getcontrollerNode().setJumpSpeed(JUMP_SPEED)
-            self.player.getcontrollerNode().doJump()
+                self.player.getControllerNode().setMaxJumpHeight(JUMP_HEIGHT)
+                self.player.getControllerNode().setJumpSpeed(JUMP_SPEED)
+            self.player.getControllerNode().doJump()
 
-        # if self.pushed:
-        #     move.setY(TYPE_1_ENEMY_PUSH_DISTANCE)
-        #     self.pushed = False
-        self.player.getcontrollerNode().setLinearMovement(move, True)
-        self.player.getcontrollerNode().setAngularMovement(turningAngle)
+        if self.pushed:
+            move.setY(TYPE_1_ENEMY_PUSH_DISTANCE)
+            self.pushed = False
+        self.player.getControllerNode().setLinearMovement(move, True)
+        self.player.getControllerNode().setAngularMovement(turningAngle)
         return task.cont

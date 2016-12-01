@@ -39,3 +39,62 @@ class Character():
 
         # Set Current Character Pose
         self.pose = pose
+
+    # ==========    Character Controls
+    def lookAt(self, position):
+        self.nodePath.lookAt(position)
+
+    # ==========    Getters
+    def getNodePath(self):
+        return self.nodePath
+
+    def getHeight(self):
+        return self.nodePath.getZ()
+
+    def getPosition(self):
+        return self.nodePath.getPos()
+
+    def getPose(self):
+        return self.pose
+
+    def getControllerNode(self):
+        return self.controllerNode
+
+    # ==========    Setters
+    def setPosition(self, position):
+        self.nodePath.setPos(position)
+
+    def setPose(self, pose):
+        if self.animator.getCurrentAnim() != 'jump':
+            if pose == JUMPING:
+                self.animator.stop()
+                self.animator.play('jump')
+                print("Jump")
+                self.pose = JUMPING
+            else:
+                if self.pose != pose:
+                    self.pose = pose
+                    self.animator.stop()
+                    if (self.pose == RUNNING):
+                        self.animator.loop('run')
+                        print("Run")
+                    elif (self.pose == WALKING):
+                        self.animator.loop('run')
+                        print("Walking")
+                    elif (self.pose == STANDING):
+                        self.animator.pose('walk', 0)
+                        print("Standing")
+
+
+    # ==========    Boolean Functions
+    def isWalking(self):
+        animate = self.animator.getCurrentAnim()
+        return animate == 'walk' or animate == 'run'
+
+    def isAttacking(self):
+        animate = self.animator.getCurrentAnim()
+        return animate == 'attack'
+
+    def goBackHome(self):
+        return
+        # print("TODO: Go back to self.position")

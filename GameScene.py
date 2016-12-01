@@ -47,7 +47,6 @@ class GameScene(ShowBase):
         # self.completeLevelSound.setVolume(5)
         # self.completeLevelSound.play()
         self.hitSound = base.loader.loadSfx("sounds/hit.mp3")
-        self.pushSound = base.loader.loadSfx("sounds/push.wav")
         self.jumpSound = base.loader.loadSfx("sounds/Jump.wav")
         self.pickupSpringSound = base.loader.loadSfx(
             "sounds/Pickup_Spring.wav")
@@ -196,14 +195,16 @@ class GameScene(ShowBase):
 
     def addShield(self):
         counter = 0
+        self.shields = []
         for position in SHIELD_POSITIONS:
-            player = Shield(self.world, self.render, "Shield_{}".format(counter), position)
+            shield = Shield(self.world, self.render, "Shield_{}".format(counter), position)
             counter+=1
+            self.shields.append(shield)
 
     def addGuard(self):
         counter = 0
+        self.guards = []
         for position in GUARD_POSITIONS:
             guard = Guard(self.world, self.render, "Guard_{}".format(counter), position)
             counter+=1
-
-
+            self.guards.append(guard)
