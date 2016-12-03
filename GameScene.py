@@ -18,6 +18,9 @@ class GameScene(ShowBase):
         self.level = 1
         # self.setupScene()
 
+    def getPhycisWorld(self):
+        return self.world
+
     def setupScene(self):
         # Set Scene Background Color
         base.setBackgroundColor(0.1, 0.1, 0.8, 1)

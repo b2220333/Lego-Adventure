@@ -1,14 +1,14 @@
-
-
+from panda3d.bullet import BulletRigidBodyNode, BulletSphereShape
 
 class FireBalls():
-    def __init__(self, world, render, loader, shooterPosition, shootingDirection):
+    def __init__(self, world, render, loader):
         self.render = render
         self.world = world
         self.loader = loader
         self.fireballs = []
 
-    def fire(self, shooterPosition, shootingDirection):
+    def fire(self, shooterPosition, targetPosition):
+        print("fire balls")
         # create bullet rigid body node
         sphereBRBN = BulletRigidBodyNode('Ball')
         # set physics properties
@@ -29,7 +29,9 @@ class FireBalls():
         # add rigid body to physics world
         self.world.attachRigidBody(sphereBRBN)
         # apply the force so it moves
-        sphereBRBN.applyCentralForce(shooting_direction.normalize() * 1000)
+        shootingDirection = targetPosition - pos
+        shootingDirection.normalize()
+        sphereBRBN.applyCentralForce(shootingDirection * 1000)
         self.fireballs.append(sphereBRBN)
 
     def cleanUp(self):

@@ -3,6 +3,7 @@ from direct.gui.DirectGui import *
 from direct.showbase.InputStateGlobal import inputState
 from Settings import *
 from panda3d.core import ClockObject
+from FireBalls import FireBalls
 
 class Game(GameScene):
     def __init__(self):
@@ -47,6 +48,8 @@ class Game(GameScene):
 
         # Setup Game Scene
         self.setupScene()
+        # Setup Guard Weapon: Fire Ball
+        self.fireballs = FireBalls(self.world, self.render, self.loader)
         # Setup Player Control
         self.setupControls()
         # TODO: Remove this
@@ -200,52 +203,27 @@ class Game(GameScene):
         return task.cont
 
     def attackingTask(self, task):
+        if (task.time % 0.2) > 0.01:
+            return task.cont
         for shield in self.shields:
             shield.updatePlayerPosition(self.player.getPosition(), task.time)
+
         for guard in self.guards:
-            guard.updatePlayerPosition(self.player.getPosition(), task.time)
+            vectorToPlayer = self.player.getPosition() - guard.getPosition()
+            vectorFromHome = guard.getPosition() - self.player.getPosition()
+            okayToAttack = False
+            if (vectorToPlayer.getZ() < 0.1 and vectorToPlayer.length() < GUARD_ATTACKING_RADIUS):
+                okayToAttack = True
+            # if guard.getPose() == SWINGING:
+            #     okayToAttack = False
+
+            if okayToAttack:
+                print("guard attacking")
+                guard.lookAt(self.player.getPosition())
+                self.fireballs.fire(guard.getPosition(), self.player.getPosition())
+            if (vectorFromHome.length() > GUARD_MAX_DISTANCE_FROM_HOME):
+                guard.goBackHome()
         return task.cont
-
-    # def guardAttachingTask(self, task):
-    #     if (task.time % 0.2) < 0.01:
-    #         for index, enemy in enumerate(self.type_2_enemys):
-    #             heading = enemy.getH()
-    #             enemy.lookAt(self.player.getPosition())
-    #             if abs(heading - enemy.getH()) > 1:
-    #                 if not self.type_2_enemy_is_running[index]:
-    #                     self.type_2_enemy_actors[index].loop('walk')
-    #                 self.type_2_enemy_is_running[index] = True
-    #             else:
-    #                 if self.type_2_enemy_is_running[index]:
-    #                     self.type_2_enemy_actors[index].stop()
-    #                     self.type_2_enemy_actors[index].pose('walk', 0)
-    #                     self.type_2_enemy_is_running[index] = False
-
-    #     if (task.time % 2) < 0.01:
-    #         for index, enemy in enumerate(self.type_2_enemys):
-    #             target = self.player.getPosition()
-    #             vec = self.player.getPosition() - enemy.getPosition()
-    #             distance = vec.length()
-    #             if distance < TYPE_2_ENEMY_ATTACK_RAIUS:
-    #                 self.type_2_enemy_actors[index].play('swing')
-    #                 # throw new ball
-    #                 pos = enemy.getPosition()
-    #                 shooting_direction = self.player.getPosition() - pos
-    #                 shooting_direction.normalize()
-    #                 print "shotting at: ", shooting_direction
-    #                 sphereNode = BulletRigidBodyNode('Ball')
-    #                 sphereNode.setMass(1.0)
-    #                 sphereNode.addShape(BulletSphereShape(0.2))
-    #                 sphere = self.render.attachNewNode(sphereNode)
-    #                 pos.setZ(pos.getZ() + 1)
-    #                 sphere.setPos(pos)
-    #                 smileyFace = self.loader.loadModel("models/smiley")
-    #                 smileyFace.setScale(0.2)
-    #                 smileyFace.reparentTo(sphere)
-    #                 self.world.attachRigidBody(sphereNode)
-    #                 sphereNode.applyCentralForce(shooting_direction * 1000)
-    #                 self.sphereNodes.append(sphereNode)
-    #     return task.cont
 
     def physicsUpdateTask(self, task):
         self.world.doPhysics(globalClock.getDt(), 4, 1.0 / 240.0)
