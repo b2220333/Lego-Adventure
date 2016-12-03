@@ -24,29 +24,28 @@ class Shield(Character):
     def updatePlayerPosition(self, playerPosition):
         vectorToTarget = playerPosition - self.nodePath.getPos()
         vectorFromOrigin = self.position - self.nodePath.getPos()
-        # print("from origin: " + str(vectorFromOrigin.length()) + ", distance to target:" + str(vectorToTarget.length()))
-        # print(type(vectorFromOrigin))
-        if (vectorToTarget.length() < SHIELD_ATTACKING_RADIUS and vectorFromOrigin.length() < SHIELD_MAX_DISTANCE_FROM_HOME):
+        if (vectorToTarget.length() < SHIELD_ATTACKING_RADIUS and vectorFromOrigin.length() < SHIELD_MAX_DISTANCEToTarget_FROM_HOME):
             self.attack(playerPosition);
         elif (vectorFromOrigin.length > 0):
             self.goBackHome()
 
     def attack(self, target):
         print("Attacking...")
-        target.setZ(self.nodePath.getZ())
         vectorToTarget = target - self.nodePath.getPos()
+        target.setZ(self.nodePath.getZ())
         # TODO: add turning
         self.nodePath.lookAt(target)
-        distance = vectorToTarget.length()
+
+        distanceToTarget = vectorToTarget.length()
         heightDelta = vectorToTarget.getZ()
-        if (distance < TYPE_1_ENEMY_ATTACK_RAIUS) and (abs(heightDelta) < 0.1):
+        if (distanceToTarget < SHIELD_ATTACKING_RADIUS) and (abs(heightDelta) < 0.1):
             if not self.isWalking():
                 self.setPose(RUNNING)
 
-        if not self.isAttacking() and distance < TYPE_1_ENEMY_ATTACK_DISTANCE:
+        if not self.isAttacking() and distanceToTarget < SHIELD_ATTACKING_RADIUS:
             self.setPose(ATTACKING)
             self.pushSound.play()
-            if distance > TYPE_1_ENEMY_ATTACK_DISTANCE and not self.isAttacking():
+            if distanceToTarget > SHIELD_ATTACKING_RADIUS and not self.isAttacking():
                 self.nodePath.node().setLinearMovement(Vec3(0, TYPE_1_ENEMY_MOVING_SPEED, 0), True)
             else:
                 self.nodePath.node().setLinearMovement(Vec3(0, 0, 0), True)

@@ -35,7 +35,7 @@ class Guard(Character):
     def attack(self, target):
         print("Attacking...")
         target.setZ(self.nodePath.getZ())
-        vectorToTarget = playerPosition - self.nodePath.getPos()
+        vectorToTarget = target - self.nodePath.getPos()
         # TODO: add turning
         self.nodePath.lookAt(target)
         distance = vectorToTarget.length()
@@ -44,10 +44,10 @@ class Guard(Character):
             if not self.isWalking():
                 self.setPose(RUNNING)
 
-        if not self.isAttacking() and distance < TYPE_1_ENEMY_ATTACK_DISTANCE:
+        if not self.isAttacking() and distance < GUARD_ATTACKING_RADIUS:
             self.setPose(ATTACKING)
             self.pushSound.play()
-            if distance > TYPE_1_ENEMY_ATTACK_DISTANCE and not self.isAttacking():
+            if distance > GUARD_ATTACKING_RADIUS and not self.isAttacking():
                 self.nodePath.node().setLinearMovement(Vec3(0, TYPE_1_ENEMY_MOVING_SPEED, 0), True)
             else:
                 self.nodePath.node().setLinearMovement(Vec3(0, 0, 0), True)
