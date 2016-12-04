@@ -21,38 +21,39 @@ class Shield(Character):
         self.pushSound = base.loader.loadSfx("sounds/push.wav")
         self.position = position
 
-    def updatePlayerPosition(self, playerPosition):
+    def updatePlayerPosition(self, playerPosition, time):
         vectorToTarget = playerPosition - self.nodePath.getPos()
-        vectorFromOrigin = self.position - self.nodePath.getPos()
-        if (vectorToTarget.length() < SHIELD_ATTACKING_RADIUS and vectorFromOrigin.length() < SHIELD_MAX_DISTANCEToTarget_FROM_HOME):
-            self.attack(playerPosition);
-        elif (vectorFromOrigin.length > 0):
+        vectorFromHome = self.position - self.nodePath.getPos()
+        if (vectorToTarget.getZ() < 0.1 and vectorToTarget.length() < SHIELD_ATTACKING_RADIUS and vectorFromHome.length() < SHIELD_MAX_DISTANCE_FROM_HOME):
+            self.attack(playerPosition, time);
+        elif (vectorFromHome.length > 0):
             self.goBackHome()
 
-    def attack(self, target):
-        print("Attacking...")
+    def attack(self, target, time):
+        # target is within attacking range
+        print("Shield Attacking...")
         vectorToTarget = target - self.nodePath.getPos()
-        target.setZ(self.nodePath.getZ())
+        # target.setZ(self.nodePath.getZ())
         # TODO: add turning
         self.nodePath.lookAt(target)
 
-        distanceToTarget = vectorToTarget.length()
-        heightDelta = vectorToTarget.getZ()
-        if (distanceToTarget < SHIELD_ATTACKING_RADIUS) and (abs(heightDelta) < 0.1):
-            if not self.isWalking():
-                self.setPose(RUNNING)
+        # distanceToTarget = vectorToTarget.length()
+        # heightDelta = vectorToTarget.getZ()
+        # if (distanceToTarget < SHIELD_ATTACKING_RADIUS):
+        #     if not self.isWalking():
+        #         self.setPose(RUNNING)
 
-        if not self.isAttacking() and distanceToTarget < SHIELD_ATTACKING_RADIUS:
-            self.setPose(ATTACKING)
-            self.pushSound.play()
-            if distanceToTarget > SHIELD_ATTACKING_RADIUS and not self.isAttacking():
-                self.nodePath.node().setLinearMovement(Vec3(0, TYPE_1_ENEMY_MOVING_SPEED, 0), True)
-            else:
-                self.nodePath.node().setLinearMovement(Vec3(0, 0, 0), True)
-                self.pushed = True
-                self.pushedDirection = vectorToTarget
-                vectorToTarget.normalize()
-        else:
-            if self.isWalking():
-                self.setPose(STANDING)
-        self.nodePath.node().setLinearMovement(Vec3(0, SHIELD_MOVING_SPEED, 0), True)
+        # if not self.isAttacking() and distanceToTarget < SHIELD_ATTACKING_RADIUS:
+        #     self.setPose(ATTACKING)
+        #     self.pushSound.play()
+        #     if distanceToTarget > SHIELD_ATTACKING_RADIUS and not self.isAttacking():
+        #         self.nodePath.node().setLinearMovement(Vec3(0, TYPE_1_ENEMY_MOVING_SPEED, 0), True)
+        #     else:
+        #         self.nodePath.node().setLinearMovement(Vec3(0, 0, 0), True)
+        #         self.pushed = True
+        #         self.pushedDirection = vectorToTarget
+        #         vectorToTarget.normalize()
+        # else:
+        #     if self.isWalking():
+        #         self.setPose(STANDING)
+        # self.nodePath.node().setLinearMovement(Vec3(0, SHIELD_MOVING_SPEED, 0), True)

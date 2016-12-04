@@ -201,9 +201,9 @@ class Game(GameScene):
 
     def attackingTask(self, task):
         for shield in self.shields:
-            shield.updatePlayerPosition(self.player.getPosition())
+            shield.updatePlayerPosition(self.player.getPosition(), task.time)
         for guard in self.guards:
-            guard.updatePlayerPosition(self.player.getPosition())
+            guard.updatePlayerPosition(self.player.getPosition(), task.time)
         return task.cont
 
     # def guardAttachingTask(self, task):

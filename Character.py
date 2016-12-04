@@ -69,7 +69,6 @@ class Character():
             if pose == JUMPING:
                 self.animator.stop()
                 self.animator.play('jump')
-                print("Jump")
                 self.pose = JUMPING
             else:
                 if self.pose != pose:
@@ -77,14 +76,12 @@ class Character():
                     self.animator.stop()
                     if (self.pose == RUNNING):
                         self.animator.loop('run')
-                        print("Run")
                     elif (self.pose == WALKING):
                         self.animator.loop('run')
-                        print("Walking")
                     elif (self.pose == STANDING):
                         self.animator.pose('walk', 0)
-                        print("Standing")
-
+                    elif (self.pose == SWINGING):
+                        self.animator.play('swing')
 
     # ==========    Boolean Functions
     def isWalking(self):

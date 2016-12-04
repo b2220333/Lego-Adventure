@@ -1,6 +1,7 @@
 from Character import *
 from direct.actor.Actor import Actor
 from Settings import *
+from panda3d.bullet import BulletWorld, BulletPlaneShape, BulletRigidBodyNode, BulletSphereShape
 
 # Members:
 #   controllerNode
@@ -22,39 +23,45 @@ class Guard(Character):
         Character.__init__(self, world, render, name, animator, position, STANDING)
         self.pushSound = base.loader.loadSfx("sounds/push.wav")
         self.position = position
-    def updatePlayerPosition(self, playerPosition):
+
+    def updatePlayerPosition(self, playerPosition, time):
         vectorToTarget = playerPosition - self.nodePath.getPos()
-        vectorFromOrigin = self.position - self.nodePath.getPos()
-        # print("from origin: " + str(vectorFromOrigin.length()) + ", distance to target:" + str(vectorToTarget.length()))
-        # print(type(vectorFromOrigin))
-        if (vectorToTarget.length() < SHIELD_ATTACKING_RADIUS and vectorFromOrigin.length() < SHIELD_MAX_DISTANCE_FROM_HOME):
-            self.attack(playerPosition);
-        elif (vectorFromOrigin.length > 0):
+        vectorFromHome = self.position - self.nodePath.getPos()
+        if (vectorToTarget.getZ() < 0.1 and vectorToTarget.length() < SHIELD_ATTACKING_RADIUS and vectorFromHome.length() < SHIELD_MAX_DISTANCE_FROM_HOME):
+            self.attack(playerPosition, time);
+        elif (vectorFromHome.length > 0):
             self.goBackHome()
 
-    def attack(self, target):
-        print("Attacking...")
+    def attack(self, target, time):
+        print("Guard Attacking...")
         target.setZ(self.nodePath.getZ())
-        vectorToTarget = target - self.nodePath.getPos()
         # TODO: add turning
         self.nodePath.lookAt(target)
-        distance = vectorToTarget.length()
-        heightDelta = vectorToTarget.getZ()
-        if (distance < TYPE_1_ENEMY_ATTACK_RAIUS) and (abs(heightDelta) < 0.1):
-            if not self.isWalking():
-                self.setPose(RUNNING)
 
-        if not self.isAttacking() and distance < GUARD_ATTACKING_RADIUS:
-            self.setPose(ATTACKING)
-            self.pushSound.play()
-            if distance > GUARD_ATTACKING_RADIUS and not self.isAttacking():
-                self.nodePath.node().setLinearMovement(Vec3(0, TYPE_1_ENEMY_MOVING_SPEED, 0), True)
-            else:
-                self.nodePath.node().setLinearMovement(Vec3(0, 0, 0), True)
-                self.pushed = True
-                self.pushedDirection = vectorToTarget
-                vectorToTarget.normalize()
-        else:
-            if self.isWalking():
-                self.setPose(STANDING)
-        self.nodePath.node().setLinearMovement(Vec3(0, GUARD_MOVING_SPEED, 0), True)
+        # Throwing balls at player
+        if (time % 2) < 0.01:
+            # clean up old balls
+            # for ball in self.sphereNodes:
+            #     ball.removeAllChildren()
+            #     self.world.removeRigidBody(ball)
+
+            vec = target - self.getPosition()
+            distance = vec.length()
+            self.setPose(SWINGING)
+            # throw new ball
+            pos = self.getPosition()
+            shooting_direction = target - pos
+            shooting_direction.normalize()
+            print "shotting at: ", shooting_direction
+            sphereNode = BulletRigidBodyNode('Ball')
+            sphereNode.setMass(1.0)
+            sphereNode.addShape(BulletSphereShape(0.2))
+            sphere = self.render.attachNewNode(sphereNode)
+            pos.setZ(pos.getZ() + 1)
+            sphere.setPos(pos)
+            smileyFace = self.loader.loadModel("models/smiley")
+            smileyFace.setScale(0.2)
+            smileyFace.reparentTo(sphere)
+            self.world.attachRigidBody(sphereNode)
+            sphereNode.applyCentralForce(shooting_direction * 1000)
+            self.sphereNodes.append(sphereNode)
