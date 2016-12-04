@@ -42,6 +42,7 @@ class Character():
 
     # ==========    Character Controls
     def lookAt(self, position):
+        position.setZ(self.getPosition().getZ())
         self.nodePath.lookAt(position)
 
     # ==========    Getters
@@ -59,6 +60,9 @@ class Character():
 
     def getControllerNode(self):
         return self.controllerNode
+
+    def getCurrentPoseName(self):
+        return self.getCurrentAnim()
 
     # ==========    Setters
     def setPosition(self, position):
@@ -81,7 +85,8 @@ class Character():
                     elif (self.pose == STANDING):
                         self.animator.pose('walk', 0)
                     elif (self.pose == SWINGING):
-                        self.animator.play('swing')
+                        self.animator.loop('attack')
+                        self.pose == STANDING
 
     # ==========    Boolean Functions
     def isWalking(self):

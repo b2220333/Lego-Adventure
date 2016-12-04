@@ -203,24 +203,26 @@ class Game(GameScene):
         return task.cont
 
     def attackingTask(self, task):
-        if (task.time % 0.2) > 0.01:
-            return task.cont
         for shield in self.shields:
             shield.updatePlayerPosition(self.player.getPosition(), task.time)
 
         for guard in self.guards:
+            guard.lookAt(self.player.getPosition())
             vectorToPlayer = self.player.getPosition() - guard.getPosition()
             vectorFromHome = guard.getPosition() - self.player.getPosition()
             okayToAttack = False
             if (vectorToPlayer.getZ() < 0.1 and vectorToPlayer.length() < GUARD_ATTACKING_RADIUS):
                 okayToAttack = True
-            # if guard.getPose() == SWINGING:
-            #     okayToAttack = False
+            else:
+                guard.setPose(STANDING)
+            if (task.time - guard.getShootingTime()) < GUARD_SHOOTING_TIME_INTERVAL:
+                okayToAttack = False
 
             if okayToAttack:
                 print("guard attacking")
-                guard.lookAt(self.player.getPosition())
                 self.fireballs.fire(guard.getPosition(), self.player.getPosition())
+                guard.setPose(SWINGING)
+                guard.saveShootingTime(task.time)
             if (vectorFromHome.length() > GUARD_MAX_DISTANCE_FROM_HOME):
                 guard.goBackHome()
         return task.cont

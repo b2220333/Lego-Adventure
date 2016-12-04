@@ -22,3 +22,10 @@ class Guard(Character):
         Character.__init__(self, world, render, name, animator, position, STANDING)
         self.pushSound = base.loader.loadSfx("sounds/push.wav")
         self.position = position
+        self.time = 1.0
+
+    def saveShootingTime(self, time):
+        self.time = time
+
+    def getShootingTime(self):
+        return self.time
