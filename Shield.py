@@ -16,7 +16,7 @@ class Shield(Character):
                                   'FallforwardGetup': 'models/Actors/lego/Shield/Shield-FallforwardGetup.egg',
                                   'jump': 'models/Actors/lego/Shield/Shield-jump.egg',
                                   'attack': 'models/Actors/lego/Shield/Shield-punch.egg',
-                                  'walk': 'models/Actors/lego/Shield/Shield-walk.egg'
+                                  'run': 'models/Actors/lego/Shield/Shield-walk.egg'
                               })
         Character.__init__(self, world, render, name, animator, position, STANDING)
         self.pushSound = base.loader.loadSfx("sounds/push.wav")

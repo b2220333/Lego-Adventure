@@ -1,5 +1,6 @@
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletSphereShape
+from Settings import GUARD_FIREBALL_LIMITE
 
 class FireBalls():
     def __init__(self, world, render, loader):
@@ -34,8 +35,14 @@ class FireBalls():
         shootingDirection.normalize()
         sphereBRBN.applyCentralForce(shootingDirection * 1000)
         self.fireballs.append(sphereBRBN)
+        self.cleanUp()
+
+    def getFireballsList(self):
+        return self.fireballs
 
     def cleanUp(self):
-        # TODO: rewrite clean up
-        if self.fireballs.size > 100:
-            self.fireballs.remove()
+        if len(self.fireballs) > GUARD_FIREBALL_LIMITE:
+            ball = self.fireballs[0]
+            ball.removeAllChildren()
+            self.world.removeRigidBody(ball)
+            self.fireballs.remove(ball)

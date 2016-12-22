@@ -52,6 +52,7 @@ class GameScene(ShowBase):
         # self.completeLevelSound.setVolume(5)
         # self.completeLevelSound.play()
         self.hitSound = base.loader.loadSfx("sounds/hit.mp3")
+        self.pushSound = base.loader.loadSfx("sounds/push.wav")
         self.jumpSound = base.loader.loadSfx("sounds/Jump.wav")
         self.pickupSpringSound = base.loader.loadSfx(
             "sounds/Pickup_Spring.wav")

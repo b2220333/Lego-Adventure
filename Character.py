@@ -46,6 +46,9 @@ class Character():
         position.setZ(self.getPosition().getZ())
         self.nodePath.lookAt(position)
 
+    def movement(self, vector):
+        self.controllerNode.setLinearMovement(vector, True)
+
     # ==========    Getters
     def getNodePath(self):
         return self.nodePath
@@ -85,7 +88,7 @@ class Character():
                         self.animator.loop('run')
                     elif (self.pose == STANDING):
                         self.animator.pose('walk', 0)
-                    elif (self.pose == SWINGING):
+                    elif (self.pose == ATTACKING):
                         self.animator.loop('attack')
                         self.pose == STANDING
 

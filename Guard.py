@@ -1,5 +1,7 @@
-from Character import *
+# Panda3d Library
 from direct.actor.Actor import Actor
+# My Game Classes
+from Character import *
 from Settings import *
 
 # Members:
