@@ -1,9 +1,10 @@
+# Panda3d Library
 from direct.actor.Actor import Actor
 from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletCharacterControllerNode
 from panda3d.core import *
+# My Game Classes
 from Settings import *
-
 # Members:
 #   controllerNode
 #   nodePath

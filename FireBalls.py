@@ -1,4 +1,5 @@
-from panda3d.bullet import BulletRigidBodyNode, BulletSphereShape
+from panda3d.bullet import BulletRigidBodyNode
+from panda3d.bullet import BulletSphereShape
 
 class FireBalls():
     def __init__(self, world, render, loader):

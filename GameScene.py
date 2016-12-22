@@ -1,6 +1,9 @@
+# Panda3d Library
 from Guard import *
 from Shield import *
 from Player import *
+from Settings import *
+# Panda3d Library
 from direct.actor.Actor import Actor
 from direct.showbase.ShowBase import ShowBase
 from panda3d.bullet import BulletBoxShape
@@ -10,7 +13,6 @@ from panda3d.bullet import BulletPlaneShape
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletWorld
 from panda3d.core import *
-from Settings import *
 
 class GameScene(ShowBase):
     def __init__(self):

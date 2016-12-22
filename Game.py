@@ -1,8 +1,10 @@
-from GameScene import *
+# Panda3d Library
 from direct.gui.DirectGui import *
 from direct.showbase.InputStateGlobal import inputState
-from Settings import *
 from panda3d.core import ClockObject
+# My Game Classes
+from GameScene import *
+from Settings import *
 from FireBalls import FireBalls
 
 class Game(GameScene):
@@ -11,14 +13,6 @@ class Game(GameScene):
         self.chooseLevel()
         self.booosted = False
         # TODO: REMOVE THESE
-        self.type_1_enemys = []
-        self.type_1_enemy_actors = []
-        self.type_1_enemy_is_running = []
-        self.type_1_enemy_is_attacking_pose = []
-        self.type_2_enemys = []
-        self.type_2_enemy_actors = []
-        self.type_2_enemy_is_running = []
-        self.type_2_enemy_is_attacking_pose = []
         self.pushed = False
 
     def chooseLevel(self):
@@ -73,7 +67,6 @@ class Game(GameScene):
         taskMgr.add(self.inputProcessingTask, 'inputProcessingTask')
         taskMgr.add(self.cameraFollowingTask, 'cameraFollowingTask')
         taskMgr.add(self.attackingTask, 'attackingTask')
-        # taskMgr.add(self.guardAttachingTask, 'guardAttachingTask')
         taskMgr.add(self.collectableCheckTask, "collectableCheckTask")
         taskMgr.add(self.hitCheckTask, "hitCheckTask")
         taskMgr.add(self.playerHealthCheckTask, "playerHealthCheckTask")
@@ -159,7 +152,7 @@ class Game(GameScene):
                 if self.booosted is False:
                     self.booosted = True
                     self.boostBar = DirectWaitBar(text="Boost",
-                                                  value=5,
+                                                  value=BOOST_TIME,
                                                   range=BOOST_TIME,
                                                   pos=(0, 1, 0.75),
                                                   scale=(0.5, 0.5, 0.2))
@@ -204,7 +197,20 @@ class Game(GameScene):
 
     def attackingTask(self, task):
         for shield in self.shields:
-            shield.updatePlayerPosition(self.player.getPosition(), task.time)
+            shield.lookAt(self.player.getPosition())
+            vectorToPlayer = self.player.getPosition() - shield.getPosition()
+            vectorFromHome = shield.getPosition() - self.player.getPosition()
+            okayToAttack = False
+            if (vectorToPlayer.getZ() < 0.1 and vectorToPlayer.length() < SHIELD_ATTACKING_RADIUS):
+                okayToAttack = True
+            else:
+                shield.setPose(STANDING)
+
+            if okayToAttack:
+
+            else:
+                shield.goBackHome()
+
 
         for guard in self.guards:
             guard.lookAt(self.player.getPosition())
@@ -223,22 +229,13 @@ class Game(GameScene):
                 self.fireballs.fire(guard.getPosition(), self.player.getPosition())
                 guard.setPose(SWINGING)
                 guard.saveShootingTime(task.time)
-            if (vectorFromHome.length() > GUARD_MAX_DISTANCE_FROM_HOME):
-                guard.goBackHome()
+            # if (vectorFromHome.length() > GUARD_MAX_DISTANCE_FROM_HOME):
+                # guard.goBackHome()
         return task.cont
 
     def physicsUpdateTask(self, task):
         self.world.doPhysics(globalClock.getDt(), 4, 1.0 / 240.0)
         return task.cont
-
-    def resetPoseTask(self, task):
-        if task.time < 1:
-            return task.cont
-        else:
-            for index in range(len(self.type_1_enemy_is_attacking_pose)):
-                self.type_1_enemy_is_attacking_pose[index] = False
-                self.type_1_enemy_is_running[index] = False
-            return task.done
 
     def inputProcessingTask(self, task):
         # Camera Control Keys
