@@ -114,10 +114,11 @@ class LegoAdventure(GameScene):
 
     def boostTimmerTask(self, task):
         if self.booosted and task.time < BOOST_TIME:
-            self.boostBar["value"] = task.time
+            self.boostBar["value"] = BOOST_TIME - task.time
             return task.cont
         else:
             self.boostBar.destroy()
+            self.booosted = False
             return task.done
 
     def playerFallingTimmerTask(self, task):
@@ -157,13 +158,6 @@ class LegoAdventure(GameScene):
                     taskMgr.add(self.boostTimmerTask, 'boostTimmerTask')
         return task.cont
 
-    def boostTimmerTask(self, task):
-        if task.time < BOOST_TIME:
-            return task.cont
-        else:
-            self.booosted = False
-            return task.done
-
     def playerHealthCheckTask(self, task):
         height = self.player.getHeight()
         # print("Health: ", self.health, " Height: ", height)
@@ -197,11 +191,7 @@ class LegoAdventure(GameScene):
         for shield in self.shields:
             shield.lookAt(self.player.getPosition())
             vectorToPlayer = self.player.getPosition() - shield.getPosition()
-            vectorFromHome = shield.getPosition() - self.player.getPosition()
-            targetWithinRange = False
-            awayFromHome = False
-            tooFarFromHome = False
-            pushed = False
+            vectorFromHome = shield.getPosition() - shield.getHomePosition()
 
             # check if target is within the attacking range
             targetWithinRange = True if (vectorToPlayer.getZ() < 0.1 and vectorToPlayer.length() < SHIELD_ATTACKING_RADIUS) else False
@@ -209,14 +199,14 @@ class LegoAdventure(GameScene):
             awayFromHome = False if (vectorFromHome.length() < 0.01) else True
             # check if shield is too far from home
             tooFarFromHome = True if (vectorFromHome.length() > SHIELD_MAX_DISTANCE_FROM_HOME) else False
+            # check if player is within the pushing range
+            withinPushingRange = True if vectorToPlayer.length() < SHIELD_PUSHING_DISTANCE else False
 
-            if targetWithinRange and not tooFarFromHome:
+            if targetWithinRange and (not tooFarFromHome):
                 shield.movement(Vec3(0, SHIELD_MOVING_SPEED, 0))
                 shield.setPose(WALKING)
-                if vectorToPlayer.length() < SHIELD_PUSHING_DISTANCE:
-                    pushed = True
 
-            if pushed:
+            if withinPushingRange:
                 self.pushSound.play()
                 vector = self.player.getPosition() - shield.getPosition()
                 vector.normalize()
@@ -231,7 +221,7 @@ class LegoAdventure(GameScene):
         for guard in self.guards:
             guard.lookAt(self.player.getPosition())
             vectorToPlayer = self.player.getPosition() - guard.getPosition()
-            vectorFromHome = guard.getPosition() - self.player.getPosition()
+            vectorFromHome = guard.getPosition() - shield.getHomePosition()
             okayToAttack = False
             if (vectorToPlayer.getZ() < 0.1 and vectorToPlayer.length() < GUARD_ATTACKING_RADIUS):
                 okayToAttack = True

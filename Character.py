@@ -41,6 +41,9 @@ class Character():
         # Set Current Character Pose
         self.pose = pose
 
+        # Save home position
+        self.home = position
+
     # ==========    Character Controls
     def lookAt(self, position):
         position.setZ(self.getPosition().getZ())
@@ -67,6 +70,9 @@ class Character():
 
     def getCurrentPoseName(self):
         return self.getCurrentAnim()
+
+    def getHomePosition(self):
+        return self.home
 
     # ==========    Setters
     def setPosition(self, position):
