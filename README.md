@@ -1,7 +1,5 @@
 # Lego-Adventure
 
-## Game Demo Video:
-http://llihao.com/Projects/LegoAdventure/GameDemo.mov
 
 ## Description:
 ~~~~
@@ -13,6 +11,14 @@ Player needs to keep jump from platform to another platform in limited time.
 Number of game levels: 3
 Number of enemy types: 2
 ~~~
+## Game Demo Video:
+http://llihao.com/Projects/LegoAdventure/GameDemo.mov
+![Alt text](./images/Die.gif)
+![Alt text](./images/Jump.gif)
+![Alt text](./images/JumpBoosted.gif)
+![Alt text](./images/JumpJump.gif)
+![Alt text](./images/ShootingBalls.gif)
+![Alt text](./images/ShootingBalls2.gif)
 
 ## Characters:
 ~~~~
@@ -21,15 +27,15 @@ Bricker:
 Guard:
     Pushing player off the platform.
     If player was pushed off the platform, game will restart.
-Shield: 
+Shield:
     Shooting balls at player.
-    Every time player was hit by the ball, player lose health. 
+    Every time player was hit by the ball, player lose health.
     When the player lost all the health points, game will restart.
 ~~~~
 
 ## Collectables:
 ~~~~
-Spring: 
+Spring:
     Player's jump height will be boost by twice.
 ~~~~
 
