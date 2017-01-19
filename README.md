@@ -12,9 +12,6 @@ Number of game levels: 3
 Number of enemy types: 2
 ~~~~
 ## Game Demo Video:
-~~~~
-http://llihao.com/Projects/LegoAdventure/GameDemo.mov
-~~~~
 ![Alt text](./Images/Die.gif)
 ![Alt text](./Images/Jump.gif)
 ![Alt text](./Images/JumpBoosted.gif)
